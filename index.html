@@ -153,7 +153,7 @@
     ];
 
     const floors = 21;
-    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2); // этажи от 2 до 22
+    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2); // 2–22
 
     Papa.parse(csvUrl, {
       download: true,
@@ -198,6 +198,7 @@
               const floor = floors - 1 - i;
               const row = document.createElement("div");
               row.className = "row";
+              const currentRow = row;
 
               for (let apt = 0; apt < entrance.count; apt++) {
                 const aptNumber = entrance.start + floor * entrance.count + apt;
@@ -206,17 +207,16 @@
                 if (greenSet.has(aptNumber)) cell.classList.add("green");
                 cell.textContent = aptNumber;
 
-                // Наведение на ячейку => подсвечивает строку
-                cell.addEventListener("mouseenter", () => row.classList.add("hovered-row"));
-                cell.addEventListener("mouseleave", () => row.classList.remove("hovered-row"));
+                cell.addEventListener("mouseenter", () => currentRow.classList.add("hovered-row"));
+                cell.addEventListener("mouseleave", () => currentRow.classList.remove("hovered-row"));
 
-                row.appendChild(cell);
+                currentRow.appendChild(cell);
               }
 
               const label = document.createElement("div");
               label.textContent = floorNumbers[floor];
               floorLabels.appendChild(label);
-              grid.appendChild(row);
+              grid.appendChild(currentRow);
             }
 
             floorGroup.appendChild(floorLabels);
@@ -227,9 +227,7 @@
           });
         }
 
-        // Initial render
         renderBuildings();
-
         document.getElementById("entranceFilter").addEventListener("change", (e) => {
           renderBuildings(e.target.value);
         });
