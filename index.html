@@ -7,93 +7,88 @@
     body {
       font-family: sans-serif;
       padding: 20px;
-      background-color: #f8f8f8;
+      background: #f8f8f8;
+      text-align: center;
     }
     h1 {
-      text-align: center;
+      margin-bottom: 40px;
     }
-    .porch {
+    .entrance {
       display: inline-block;
-      margin: 10px;
-    }
-    .porch-title {
-      text-align: center;
-      margin: 10px 0;
-      font-weight: bold;
+      margin: 0 20px;
     }
     .column {
       display: flex;
       flex-direction: column-reverse;
+      gap: 2px;
     }
     .cell {
-      width: 30px;
+      width: 40px;
       height: 30px;
+      background-color: #eee;
+      border: 1px solid #ccc;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid #ccc;
-      background-color: #eee;
-      margin: 1px;
-      font-size: 10px;
+      font-size: 11px;
     }
     .cell.green {
       background-color: #00ff00;
     }
-    .grid {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 20px;
+    .floor-label {
+      font-weight: bold;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
   <h1>Участие квартир в ОСС</h1>
-  <div class="grid" id="grid"></div>
+  <div style="display: flex; justify-content: center; gap: 40px;">
+    <div id="grid"></div>
+  </div>
 
   <script>
-    const participated = [101, 103, 124, 171, 247, 275, 285, 298, 483, 590, 612];
+    const participated = [101, 103, 124, 171, 247, 275, 285, 298, 483, 590, 612]; // ← сюда подставим список квартир
 
-    const porches = [
-      { number: 1, perFloor: 5 },
-      { number: 2, perFloor: 5 },
-      { number: 3, perFloor: 6 },
-      { number: 4, perFloor: 10 },
-      { number: 5, perFloor: 9 }
+    const entrances = [
+      { id: 1, floors: 22, flatsPerFloor: 5 },
+      { id: 2, floors: 22, flatsPerFloor: 5 },
+      { id: 3, floors: 22, flatsPerFloor: 6 },
+      { id: 4, floors: 22, flatsPerFloor: 10 },
+      { id: 5, floors: 22, flatsPerFloor: 9 },
     ];
 
-    const startFloor = 2;
-    const endFloor = 22;
-    let currentFlat = 1;
+    let flatCounter = 1;
+    const container = document.getElementById('grid');
 
-    for (const porch of porches) {
-      const container = document.createElement('div');
-      container.className = 'porch';
-
-      const title = document.createElement('div');
-      title.className = 'porch-title';
-      title.textContent = `Подъезд ${porch.number}`;
-      container.appendChild(title);
-
+    entrances.forEach(entrance => {
       const column = document.createElement('div');
-      column.className = 'column';
+      column.className = 'entrance';
 
-      for (let floor = startFloor; floor <= endFloor; floor++) {
-        for (let i = 0; i < porch.perFloor; i++) {
-          const div = document.createElement('div');
-          div.className = 'cell';
-          div.textContent = currentFlat;
-          if (participated.includes(currentFlat)) {
-            div.classList.add('green');
+      const label = document.createElement('div');
+      label.className = 'floor-label';
+      label.innerText = `Подъезд ${entrance.id}`;
+      column.appendChild(label);
+
+      const floors = document.createElement('div');
+      floors.className = 'column';
+
+      for (let floor = 2; floor <= entrance.floors + 1; floor++) {
+        for (let i = 0; i < entrance.flatsPerFloor; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.innerText = flatCounter;
+          if (participated.includes(flatCounter)) {
+            cell.classList.add('green');
           }
-          column.appendChild(div);
-          currentFlat++;
+          floors.appendChild(cell);
+          flatCounter++;
         }
       }
 
+      column.appendChild(floors);
       container.appendChild(column);
-      document.getElementById('grid').appendChild(container);
-    }
+    });
   </script>
 </body>
 </html>
