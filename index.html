@@ -19,22 +19,23 @@
       display: flex;
       justify-content: center;
       gap: 40px;
+      align-items: flex-start;
     }
 
-    .entrance-wrapper {
+    .entrance-block {
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
     .entrance-title {
-      margin-bottom: 10px;
       font-weight: bold;
+      margin-bottom: 5px;
+      height: 20px;
     }
 
-    .floor-group {
+    .entrance {
       display: flex;
-      align-items: flex-start;
     }
 
     .floor-labels {
@@ -53,10 +54,9 @@
       width: 20px;
     }
 
-    .entrance {
+    .columns {
       display: flex;
       flex-direction: column;
-      gap: 2px;
     }
 
     .row {
@@ -95,7 +95,7 @@
     ];
 
     const floors = 21;
-    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2); // этажи 2–22
+    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2); // 2–22
 
     const participated = [101, 102, 103, 124, 171, 247, 275, 285, 298, 483, 590, 612];
 
@@ -103,33 +103,28 @@
 
     entrances.forEach((entrance, index) => {
       const wrapper = document.createElement("div");
-      wrapper.className = "entrance-wrapper";
+      wrapper.className = "entrance-block";
 
       const title = document.createElement("div");
       title.className = "entrance-title";
       title.textContent = `Подъезд ${index + 1}`;
 
       const floorGroup = document.createElement("div");
-      floorGroup.className = "floor-group";
+      floorGroup.className = "entrance";
 
       const floorLabels = document.createElement("div");
       floorLabels.className = "floor-labels";
 
-      floorNumbers.forEach(number => {
-        const label = document.createElement("div");
-        label.textContent = number;
-        floorLabels.appendChild(label);
-      });
+      const grid = document.createElement("div");
+      grid.className = "columns";
 
-      const entranceDiv = document.createElement("div");
-      entranceDiv.className = "entrance";
-
-      floorNumbers.forEach((floor, i) => {
+      for (let i = 0; i < floors; i++) {
+        const floor = floors - 1 - i; // чтобы 22 сверху, 2 внизу
         const row = document.createElement("div");
         row.className = "row";
 
         for (let apt = 0; apt < entrance.count; apt++) {
-          const aptNumber = entrance.start + i * entrance.count + apt;
+          const aptNumber = entrance.start + floor * entrance.count + apt;
           const cell = document.createElement("div");
           cell.className = "cell";
           if (participated.includes(aptNumber)) cell.classList.add("green");
@@ -137,11 +132,14 @@
           row.appendChild(cell);
         }
 
-        entranceDiv.appendChild(row);
-      });
+        const label = document.createElement("div");
+        label.textContent = floorNumbers[floor];
+        floorLabels.appendChild(label);
+        grid.appendChild(row);
+      }
 
       floorGroup.appendChild(floorLabels);
-      floorGroup.appendChild(entranceDiv);
+      floorGroup.appendChild(grid);
 
       wrapper.appendChild(title);
       wrapper.appendChild(floorGroup);
@@ -150,6 +148,7 @@
   </script>
 </body>
 </html>
+
 
 
 
