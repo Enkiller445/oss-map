@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Участие квартир в ОСС</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -21,22 +21,35 @@
     }
 
     .legend {
-      margin-bottom: 10px;
+      margin-bottom: 20px;
       font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
-    .legend span {
+    .legend span.square {
       display: inline-block;
       width: 16px;
       height: 16px;
       background-color: #00c853;
-      margin-right: 6px;
       border-radius: 3px;
       vertical-align: middle;
     }
 
+    #participated-count {
+      font-weight: bold;
+      margin: 0 4px;
+      color: #000;
+    }
+
     .filters {
       margin-bottom: 20px;
+    }
+
+    .filters label {
+      font-size: 14px;
     }
 
     .filters select {
@@ -44,6 +57,7 @@
       font-size: 14px;
       border-radius: 6px;
       border: 1px solid #aaa;
+      margin-left: 6px;
     }
 
     .building {
@@ -133,18 +147,22 @@
 <body>
   <h1>Участие квартир в ОСС</h1>
   <div class="legend">
-    <span></span> Приняли участие в ОСС: <span id="participated-count">0</span> квартир
+    <span class="square"></span>
+    Приняли участие в ОСС:
+    <span id="participated-count">0</span>
+    квартир
   </div>
   <div class="filters">
-    <label for="entranceFilter">Фильтр по подъезду:</label>
-    <select id="entranceFilter" onchange="render()">
-      <option value="all">Все</option>
-      <option value="1">Подъезд 1</option>
-      <option value="2">Подъезд 2</option>
-      <option value="3">Подъезд 3</option>
-      <option value="4">Подъезд 4</option>
-      <option value="5">Подъезд 5</option>
-    </select>
+    <label for="entranceFilter">Фильтр по подъезду:
+      <select id="entranceFilter" onchange="render()">
+        <option value="all">Все</option>
+        <option value="1">Подъезд 1</option>
+        <option value="2">Подъезд 2</option>
+        <option value="3">Подъезд 3</option>
+        <option value="4">Подъезд 4</option>
+        <option value="5">Подъезд 5</option>
+      </select>
+    </label>
   </div>
 
   <div class="building" id="building"></div>
@@ -218,9 +236,11 @@
             const aptNumber = entrance.start + floor * entrance.count + apt;
             const cell = document.createElement("div");
             cell.className = "cell";
+
             if (greenSet.has(aptNumber)) {
               cell.classList.add("green");
             }
+
             cell.textContent = aptNumber;
             row.appendChild(cell);
           }
