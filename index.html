@@ -95,11 +95,6 @@
     .row {
       display: flex;
       gap: 2px;
-      transition: background-color 0.2s ease;
-    }
-
-    .row.hovered-row {
-      background-color: rgba(0, 0, 0, 0.05);
     }
 
     .cell {
@@ -153,7 +148,7 @@
     ];
 
     const floors = 21;
-    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2); // 2–22
+    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2); // этажи от 2 до 22
 
     Papa.parse(csvUrl, {
       download: true,
@@ -198,7 +193,6 @@
               const floor = floors - 1 - i;
               const row = document.createElement("div");
               row.className = "row";
-              const currentRow = row;
 
               for (let apt = 0; apt < entrance.count; apt++) {
                 const aptNumber = entrance.start + floor * entrance.count + apt;
@@ -206,17 +200,13 @@
                 cell.className = "cell";
                 if (greenSet.has(aptNumber)) cell.classList.add("green");
                 cell.textContent = aptNumber;
-
-                cell.addEventListener("mouseenter", () => currentRow.classList.add("hovered-row"));
-                cell.addEventListener("mouseleave", () => currentRow.classList.remove("hovered-row"));
-
-                currentRow.appendChild(cell);
+                row.appendChild(cell);
               }
 
               const label = document.createElement("div");
               label.textContent = floorNumbers[floor];
               floorLabels.appendChild(label);
-              grid.appendChild(currentRow);
+              grid.appendChild(row);
             }
 
             floorGroup.appendChild(floorLabels);
@@ -227,7 +217,9 @@
           });
         }
 
+        // Initial render
         renderBuildings();
+
         document.getElementById("entranceFilter").addEventListener("change", (e) => {
           renderBuildings(e.target.value);
         });
