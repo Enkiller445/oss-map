@@ -24,14 +24,16 @@
     }
 
     .pod {
-      display: flex;
-      flex-direction: column-reverse;
+      display: grid;
+      grid-auto-rows: 32px;
+      grid-template-columns: repeat(auto-fill, 32px);
+      gap: 2px;
+      justify-content: center;
     }
 
     .cell {
-      width: 34px;
-      height: 34px;
-      margin: 1px;
+      width: 30px;
+      height: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -45,9 +47,14 @@
       background-color: #00ff00;
     }
 
+    .pod-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
     .pod-label {
-      text-align: center;
-      margin-top: 5px;
+      margin-top: 10px;
       font-weight: bold;
     }
   </style>
@@ -75,15 +82,19 @@
     const grid = document.getElementById("grid");
 
     for (let pod = 1; pod <= 5; pod++) {
+      const podWrap = document.createElement("div");
+      podWrap.className = "pod-wrapper";
+
       const podDiv = document.createElement("div");
       podDiv.className = "pod";
 
       const flatsPerFloor = config[pod].count;
+      let counter = 0;
 
-      for (let floor = minFloor; floor <= maxFloor; floor++) {
-        const base = (maxFloor - floor) * flatsPerFloor;
+      for (let floor = maxFloor; floor >= minFloor; floor--) {
         for (let i = 0; i < flatsPerFloor; i++) {
-          const flat = base + i + 1 + flatsPerFloor * (pod - 1) * (maxFloor - minFloor + 1);
+          const flat = counter + 1;
+          counter++;
           const cell = document.createElement("div");
           cell.className = "cell" + (participated.includes(flat) ? " green" : "");
           cell.textContent = flat;
@@ -94,9 +105,10 @@
       const label = document.createElement("div");
       label.className = "pod-label";
       label.textContent = `Подъезд ${pod}`;
-      podDiv.appendChild(label);
 
-      grid.appendChild(podDiv);
+      podWrap.appendChild(podDiv);
+      podWrap.appendChild(label);
+      grid.appendChild(podWrap);
     }
   </script>
 </body>
