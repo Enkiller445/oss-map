@@ -2,24 +2,30 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Участие квартир в ОСС</title>
+  <title>Участие в ОСС</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- PapaParse для загрузки CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f9f9f9;
-      padding: 20px;
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background-color: #d1eaf5;
+      color: #2d2d2d;
       text-align: center;
+      padding: 20px;
     }
 
     h1 {
-      margin-bottom: 30px;
+      font-size: 24px;
+      margin-bottom: 20px;
     }
 
     .building {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 40px;
-      align-items: flex-start;
     }
 
     .entrance-block {
@@ -31,7 +37,6 @@
     .entrance-title {
       font-weight: bold;
       margin-bottom: 5px;
-      height: 20px;
     }
 
     .entrance {
@@ -50,7 +55,7 @@
       align-items: center;
       justify-content: flex-end;
       font-size: 12px;
-      color: #666;
+      color: #555;
       width: 20px;
     }
 
@@ -67,13 +72,39 @@
     .cell {
       width: 35px;
       height: 35px;
-      background-color: #eee;
-      border: 1px solid #ccc;
+      background-color: #f0f0f0;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 12px;
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
       box-sizing: border-box;
+    }
+
+    .cell.green {
+      background-color: #00c853;
+      color: white;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .building {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .cell {
+        width: 28px;
+        height: 28px;
+        font-size: 10px;
+      }
+
+      .floor-labels div {
+        height: 28px;
+        font-size: 10px;
+      }
     }
   </style>
 </head>
@@ -81,8 +112,6 @@
   <h1>Участие квартир в ОСС</h1>
   <div class="building" id="building"></div>
 
-  <!-- Подключение PapaParse -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTVguQuI3g3Pw_do6G0OCFVx_BGhAigv1o8lIN_TIjKFURE2ntNXxYA8q7CrmC5kIBKajXiIOSSW7TN/pub?gid=1888694008&single=true&output=csv';
 
@@ -140,7 +169,7 @@
               cell.className = "cell";
 
               if (greenSet.has(aptNumber)) {
-                cell.style.backgroundColor = "#00ff00";
+                cell.classList.add("green");
               }
 
               cell.textContent = aptNumber;
