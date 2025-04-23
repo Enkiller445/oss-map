@@ -1,81 +1,166 @@
-<!-- Подключение PapaParse -->
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<script>
-  const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTVguQuI3g3Pw_do6G0OCFVx_BGhAigv1o8lIN_TIjKFURE2ntNXxYA8q7CrmC5kIBKajXiIOSSW7TN/pub?gid=1888694008&single=true&output=csv';
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Участие квартир в ОСС</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+      text-align: center;
+    }
 
-  const entrances = [
-    { count: 5, start: 1 },
-    { count: 5, start: 106 },
-    { count: 6, start: 211 },
-    { count: 10, start: 337 },
-    { count: 9, start: 547 }
-  ];
+    h1 {
+      margin-bottom: 30px;
+    }
 
-  const floors = 21;
-  const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2); // 2–22
+    .building {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      align-items: flex-start;
+    }
 
-  Papa.parse(csvUrl, {
-    download: true,
-    header: true,
-    complete: function(results) {
-      const data = results.data;
-      const greenSet = new Set();
+    .entrance-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-      data.forEach(row => {
-        if (row["Квартира"] && row["Цвет"] && row["Цвет"].toLowerCase() === "#00ff00") {
-          greenSet.add(+row["Квартира"]);
-        }
-      });
+    .entrance-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      height: 20px;
+    }
 
-      const buildingDiv = document.getElementById("building");
+    .entrance {
+      display: flex;
+    }
 
-      entrances.forEach((entrance, index) => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "entrance-block";
+    .floor-labels {
+      display: flex;
+      flex-direction: column;
+      margin-right: 5px;
+    }
 
-        const title = document.createElement("div");
-        title.className = "entrance-title";
-        title.textContent = `Подъезд ${index + 1}`;
+    .floor-labels div {
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-size: 12px;
+      color: #666;
+      width: 20px;
+    }
 
-        const floorGroup = document.createElement("div");
-        floorGroup.className = "entrance";
+    .columns {
+      display: flex;
+      flex-direction: column;
+    }
 
-        const floorLabels = document.createElement("div");
-        floorLabels.className = "floor-labels";
+    .row {
+      display: flex;
+      gap: 2px;
+    }
 
-        const grid = document.createElement("div");
-        grid.className = "columns";
+    .cell {
+      width: 35px;
+      height: 35px;
+      background-color: #eee;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <h1>Участие квартир в ОСС</h1>
+  <div class="building" id="building"></div>
 
-        for (let i = 0; i < floors; i++) {
-          const floor = floors - 1 - i;
-          const row = document.createElement("div");
-          row.className = "row";
+  <!-- Подключение PapaParse -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script>
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTVguQuI3g3Pw_do6G0OCFVx_BGhAigv1o8lIN_TIjKFURE2ntNXxYA8q7CrmC5kIBKajXiIOSSW7TN/pub?gid=1888694008&single=true&output=csv';
 
-          for (let apt = 0; apt < entrance.count; apt++) {
-            const aptNumber = entrance.start + floor * entrance.count + apt;
-            const cell = document.createElement("div");
-            cell.className = "cell";
+    const entrances = [
+      { count: 5, start: 1 },
+      { count: 5, start: 106 },
+      { count: 6, start: 211 },
+      { count: 10, start: 337 },
+      { count: 9, start: 547 }
+    ];
 
-            if (greenSet.has(aptNumber)) {
-              cell.style.backgroundColor = "#00ff00";
+    const floors = 21;
+    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
+
+    Papa.parse(csvUrl, {
+      download: true,
+      header: true,
+      complete: function(results) {
+        const data = results.data;
+        const greenSet = new Set();
+
+        data.forEach(row => {
+          if (row["Квартира"] && row["Цвет"] && row["Цвет"].toLowerCase() === "#00ff00") {
+            greenSet.add(+row["Квартира"]);
+          }
+        });
+
+        const buildingDiv = document.getElementById("building");
+
+        entrances.forEach((entrance, index) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "entrance-block";
+
+          const title = document.createElement("div");
+          title.className = "entrance-title";
+          title.textContent = `Подъезд ${index + 1}`;
+
+          const floorGroup = document.createElement("div");
+          floorGroup.className = "entrance";
+
+          const floorLabels = document.createElement("div");
+          floorLabels.className = "floor-labels";
+
+          const grid = document.createElement("div");
+          grid.className = "columns";
+
+          for (let i = 0; i < floors; i++) {
+            const floor = floors - 1 - i;
+            const row = document.createElement("div");
+            row.className = "row";
+
+            for (let apt = 0; apt < entrance.count; apt++) {
+              const aptNumber = entrance.start + floor * entrance.count + apt;
+              const cell = document.createElement("div");
+              cell.className = "cell";
+
+              if (greenSet.has(aptNumber)) {
+                cell.style.backgroundColor = "#00ff00";
+              }
+
+              cell.textContent = aptNumber;
+              row.appendChild(cell);
             }
 
-            cell.textContent = aptNumber;
-            row.appendChild(cell);
+            const label = document.createElement("div");
+            label.textContent = floorNumbers[floor];
+            floorLabels.appendChild(label);
+            grid.appendChild(row);
           }
 
-          const label = document.createElement("div");
-          label.textContent = floorNumbers[floor];
-          floorLabels.appendChild(label);
-          grid.appendChild(row);
-        }
-
-        floorGroup.appendChild(floorLabels);
-        floorGroup.appendChild(grid);
-        wrapper.appendChild(title);
-        wrapper.appendChild(floorGroup);
-        buildingDiv.appendChild(wrapper);
-      });
-    }
-  });
-</script>
+          floorGroup.appendChild(floorLabels);
+          floorGroup.appendChild(grid);
+          wrapper.appendChild(title);
+          wrapper.appendChild(floorGroup);
+          buildingDiv.appendChild(wrapper);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
