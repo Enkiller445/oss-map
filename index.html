@@ -3,54 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <title>Участие квартир в ОСС</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
     body {
-      margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background-color: #d1eaf5;
-      color: #2d2d2d;
+      font-family: sans-serif;
+      background-color: #d5ecf7;
       padding: 20px;
       text-align: center;
     }
 
     h1 {
-      font-size: 22px;
       margin-bottom: 10px;
     }
 
     .legend {
-      margin-bottom: 20px;
-      font-size: 14px;
+      margin-bottom: 10px;
+      font-weight: bold;
     }
 
-    .legend span {
-      display: inline-block;
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
       width: 16px;
       height: 16px;
-      background-color: #00c853;
-      margin-right: 6px;
-      border-radius: 3px;
-      vertical-align: middle;
+      border: 1px solid #ccc;
+      background-color: #00ff00;
     }
 
-    .filters {
-      margin-bottom: 20px;
-    }
-
-    .filters select {
-      padding: 6px 10px;
+    select {
+      padding: 4px;
       font-size: 14px;
-      border-radius: 6px;
-      border: 1px solid #aaa;
+      margin-bottom: 20px;
     }
 
     .building {
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
       gap: 40px;
+      flex-wrap: wrap;
     }
 
     .entrance-block {
@@ -62,7 +56,7 @@
     .entrance-title {
       font-weight: bold;
       margin-bottom: 5px;
-      font-size: 14px;
+      height: 20px;
     }
 
     .entrance {
@@ -76,13 +70,13 @@
     }
 
     .floor-labels div {
-      height: 28px;
+      height: 35px;
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      font-size: 11px;
-      color: #555;
-      width: 22px;
+      font-size: 12px;
+      color: #666;
+      width: 20px;
     }
 
     .columns {
@@ -96,54 +90,44 @@
     }
 
     .cell {
-      width: 28px;
-      height: 28px;
-      background-color: #f2f2f2;
-      border-radius: 6px;
+      width: 35px;
+      height: 35px;
+      background-color: #fdfdfd;
+      border: 1px solid #ccc;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
-      box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
+      font-size: 12px;
       box-sizing: border-box;
     }
 
-    .cell.green {
-      background-color: #00c853;
-      color: white;
-      font-weight: bold;
+    .green {
+      background-color: #00ff00 !important;
     }
 
-    @media (max-width: 768px) {
-      .building {
-        gap: 20px;
-      }
-      .cell {
-        width: 24px;
-        height: 24px;
-        font-size: 9px;
-      }
-      .floor-labels div {
-        height: 24px;
-        font-size: 9px;
-      }
+    .hidden {
+      display: none !important;
     }
   </style>
 </head>
 <body>
   <h1>Участие квартир в ОСС</h1>
-  <div class="legend"><span></span> Участвовал</div>
-  <div class="filters">
-    <label for="entranceFilter">Фильтр по подъезду: </label>
-    <select id="entranceFilter" onchange="render()">
-      <option value="all">Все</option>
-      <option value="1">Подъезд 1</option>
-      <option value="2">Подъезд 2</option>
-      <option value="3">Подъезд 3</option>
-      <option value="4">Подъезд 4</option>
-      <option value="5">Подъезд 5</option>
-    </select>
+  <div class="legend">
+    <span class="legend-item">
+      <div class="legend-color"></div> Участвовал:
+      <span id="participated-count">0</span> квартир
+    </span>
   </div>
+
+  <label for="entranceFilter">Фильтр по подъезду:</label>
+  <select id="entranceFilter">
+    <option value="all">Все</option>
+    <option value="0">Подъезд 1</option>
+    <option value="1">Подъезд 2</option>
+    <option value="2">Подъезд 3</option>
+    <option value="3">Подъезд 4</option>
+    <option value="4">Подъезд 5</option>
+  </select>
 
   <div class="building" id="building"></div>
 
@@ -159,84 +143,84 @@
     ];
 
     const floors = 21;
-    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
-    let greenSet = new Set();
+    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2); // 2–22
 
     Papa.parse(csvUrl, {
       download: true,
       header: true,
       complete: function(results) {
         const data = results.data;
-        greenSet = new Set();
+        const greenSet = new Set();
 
         data.forEach(row => {
-          const color = row["Цвет"]?.trim().toLowerCase();
-          const apt = parseInt(row["Квартира"]);
+          const apt = row["Квартира"];
+          const color = row["Цвет"]?.toLowerCase();
           if (apt && color === "#00ff00") {
-            greenSet.add(apt);
+            greenSet.add(+apt);
           }
         });
 
-        render();
-      }
-    });
+        document.getElementById("participated-count").textContent = greenSet.size;
 
-    function render() {
-      const selected = document.getElementById("entranceFilter").value;
-      const buildingDiv = document.getElementById("building");
-      buildingDiv.innerHTML = '';
+        const buildingDiv = document.getElementById("building");
 
-      entrances.forEach((entrance, index) => {
-        const entranceNumber = index + 1;
-        if (selected !== 'all' && parseInt(selected) !== entranceNumber) return;
+        entrances.forEach((entrance, index) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "entrance-block";
+          wrapper.dataset.entrance = index;
 
-        const wrapper = document.createElement("div");
-        wrapper.className = "entrance-block";
+          const title = document.createElement("div");
+          title.className = "entrance-title";
+          title.textContent = `Подъезд ${index + 1}`;
 
-        const title = document.createElement("div");
-        title.className = "entrance-title";
-        title.textContent = `Подъезд ${entranceNumber}`;
+          const floorGroup = document.createElement("div");
+          floorGroup.className = "entrance";
 
-        const floorGroup = document.createElement("div");
-        floorGroup.className = "entrance";
+          const floorLabels = document.createElement("div");
+          floorLabels.className = "floor-labels";
 
-        const floorLabels = document.createElement("div");
-        floorLabels.className = "floor-labels";
+          const grid = document.createElement("div");
+          grid.className = "columns";
 
-        const grid = document.createElement("div");
-        grid.className = "columns";
+          for (let i = 0; i < floors; i++) {
+            const floor = floors - 1 - i;
+            const row = document.createElement("div");
+            row.className = "row";
 
-        for (let i = 0; i < floors; i++) {
-          const floor = floors - 1 - i;
-          const row = document.createElement("div");
-          row.className = "row";
-
-          for (let apt = 0; apt < entrance.count; apt++) {
-            const aptNumber = entrance.start + floor * entrance.count + apt;
-            const cell = document.createElement("div");
-            cell.className = "cell";
-
-            if (greenSet.has(aptNumber)) {
-              cell.classList.add("green");
+            for (let apt = 0; apt < entrance.count; apt++) {
+              const aptNumber = entrance.start + floor * entrance.count + apt;
+              const cell = document.createElement("div");
+              cell.className = "cell";
+              if (greenSet.has(aptNumber)) {
+                cell.classList.add("green");
+              }
+              cell.textContent = aptNumber;
+              row.appendChild(cell);
             }
 
-            cell.textContent = aptNumber;
-            row.appendChild(cell);
+            const label = document.createElement("div");
+            label.textContent = floorNumbers[floor];
+            floorLabels.appendChild(label);
+            grid.appendChild(row);
           }
 
-          const label = document.createElement("div");
-          label.textContent = floorNumbers[floor];
-          floorLabels.appendChild(label);
-          grid.appendChild(row);
-        }
+          floorGroup.appendChild(floorLabels);
+          floorGroup.appendChild(grid);
+          wrapper.appendChild(title);
+          wrapper.appendChild(floorGroup);
+          buildingDiv.appendChild(wrapper);
+        });
 
-        floorGroup.appendChild(floorLabels);
-        floorGroup.appendChild(grid);
-        wrapper.appendChild(title);
-        wrapper.appendChild(floorGroup);
-        buildingDiv.appendChild(wrapper);
-      });
-    }
+        // фильтр по подъезду
+        const filter = document.getElementById("entranceFilter");
+        filter.addEventListener("change", () => {
+          const value = filter.value;
+          document.querySelectorAll(".entrance-block").forEach((el, i) => {
+            el.classList.toggle("hidden", value !== "all" && value !== i.toString());
+          });
+        });
+      }
+    });
   </script>
 </body>
 </html>
