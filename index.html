@@ -11,13 +11,39 @@
       font-family: "Segoe UI", sans-serif;
       background-color: #d1eaf5;
       color: #2d2d2d;
-      text-align: center;
       padding: 20px;
+      text-align: center;
     }
 
     h1 {
       font-size: 22px;
-      margin-bottom: 24px;
+      margin-bottom: 10px;
+    }
+
+    .legend {
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .legend span {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      background-color: #00c853;
+      margin-right: 6px;
+      border-radius: 3px;
+      vertical-align: middle;
+    }
+
+    .filters {
+      margin-bottom: 20px;
+    }
+
+    .filters select {
+      padding: 6px 10px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
     }
 
     .building {
@@ -106,6 +132,19 @@
 </head>
 <body>
   <h1>Участие квартир в ОСС</h1>
+  <div class="legend"><span></span> Участвовал</div>
+  <div class="filters">
+    <label for="entranceFilter">Фильтр по подъезду: </label>
+    <select id="entranceFilter" onchange="render()">
+      <option value="all">Все</option>
+      <option value="1">Подъезд 1</option>
+      <option value="2">Подъезд 2</option>
+      <option value="3">Подъезд 3</option>
+      <option value="4">Подъезд 4</option>
+      <option value="5">Подъезд 5</option>
+    </select>
+  </div>
+
   <div class="building" id="building"></div>
 
   <script>
@@ -121,13 +160,14 @@
 
     const floors = 21;
     const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
+    let greenSet = new Set();
 
     Papa.parse(csvUrl, {
       download: true,
       header: true,
       complete: function(results) {
         const data = results.data;
-        const greenSet = new Set();
+        greenSet = new Set();
 
         data.forEach(row => {
           const color = row["Цвет"]?.trim().toLowerCase();
@@ -137,57 +177,66 @@
           }
         });
 
-        const buildingDiv = document.getElementById("building");
-
-        entrances.forEach((entrance, index) => {
-          const wrapper = document.createElement("div");
-          wrapper.className = "entrance-block";
-
-          const title = document.createElement("div");
-          title.className = "entrance-title";
-          title.textContent = `Подъезд ${index + 1}`;
-
-          const floorGroup = document.createElement("div");
-          floorGroup.className = "entrance";
-
-          const floorLabels = document.createElement("div");
-          floorLabels.className = "floor-labels";
-
-          const grid = document.createElement("div");
-          grid.className = "columns";
-
-          for (let i = 0; i < floors; i++) {
-            const floor = floors - 1 - i;
-            const row = document.createElement("div");
-            row.className = "row";
-
-            for (let apt = 0; apt < entrance.count; apt++) {
-              const aptNumber = entrance.start + floor * entrance.count + apt;
-              const cell = document.createElement("div");
-              cell.className = "cell";
-
-              if (greenSet.has(aptNumber)) {
-                cell.classList.add("green");
-              }
-
-              cell.textContent = aptNumber;
-              row.appendChild(cell);
-            }
-
-            const label = document.createElement("div");
-            label.textContent = floorNumbers[floor];
-            floorLabels.appendChild(label);
-            grid.appendChild(row);
-          }
-
-          floorGroup.appendChild(floorLabels);
-          floorGroup.appendChild(grid);
-          wrapper.appendChild(title);
-          wrapper.appendChild(floorGroup);
-          buildingDiv.appendChild(wrapper);
-        });
+        render();
       }
     });
+
+    function render() {
+      const selected = document.getElementById("entranceFilter").value;
+      const buildingDiv = document.getElementById("building");
+      buildingDiv.innerHTML = '';
+
+      entrances.forEach((entrance, index) => {
+        const entranceNumber = index + 1;
+        if (selected !== 'all' && parseInt(selected) !== entranceNumber) return;
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "entrance-block";
+
+        const title = document.createElement("div");
+        title.className = "entrance-title";
+        title.textContent = `Подъезд ${entranceNumber}`;
+
+        const floorGroup = document.createElement("div");
+        floorGroup.className = "entrance";
+
+        const floorLabels = document.createElement("div");
+        floorLabels.className = "floor-labels";
+
+        const grid = document.createElement("div");
+        grid.className = "columns";
+
+        for (let i = 0; i < floors; i++) {
+          const floor = floors - 1 - i;
+          const row = document.createElement("div");
+          row.className = "row";
+
+          for (let apt = 0; apt < entrance.count; apt++) {
+            const aptNumber = entrance.start + floor * entrance.count + apt;
+            const cell = document.createElement("div");
+            cell.className = "cell";
+
+            if (greenSet.has(aptNumber)) {
+              cell.classList.add("green");
+            }
+
+            cell.textContent = aptNumber;
+            row.appendChild(cell);
+          }
+
+          const label = document.createElement("div");
+          label.textContent = floorNumbers[floor];
+          floorLabels.appendChild(label);
+          grid.appendChild(row);
+        }
+
+        floorGroup.appendChild(floorLabels);
+        floorGroup.appendChild(grid);
+        wrapper.appendChild(title);
+        wrapper.appendChild(floorGroup);
+        buildingDiv.appendChild(wrapper);
+      });
+    }
   </script>
 </body>
 </html>
