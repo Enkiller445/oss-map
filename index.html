@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Участие квартир в ОСС</title>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
     body {
-      font-family: system-ui, sans-serif;
-      background: #d8edf6;
+      font-family: sans-serif;
+      background-color: #d5ecf7;
       padding: 20px;
       text-align: center;
     }
 
     h1 {
-      font-size: 28px;
       margin-bottom: 10px;
     }
 
     .legend {
       margin-bottom: 10px;
-      font-size: 16px;
+      font-weight: bold;
     }
 
     .legend-item {
@@ -28,32 +28,23 @@
     }
 
     .legend-color {
-      width: 15px;
-      height: 15px;
+      width: 16px;
+      height: 16px;
+      border: 1px solid #ccc;
       background-color: #00ff00;
-      border: 1px solid #333;
-      display: inline-block;
-    }
-
-    label {
-      margin-top: 8px;
-      display: block;
-      font-size: 16px;
     }
 
     select {
-      padding: 4px 8px;
-      font-size: 15px;
-      margin-top: 4px;
+      padding: 4px;
+      font-size: 14px;
+      margin-bottom: 20px;
     }
 
     .building {
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
       gap: 40px;
-      align-items: flex-start;
-      margin-top: 20px;
+      flex-wrap: wrap;
     }
 
     .entrance-block {
@@ -65,6 +56,7 @@
     .entrance-title {
       font-weight: bold;
       margin-bottom: 5px;
+      height: 20px;
     }
 
     .entrance {
@@ -109,8 +101,12 @@
       box-sizing: border-box;
     }
 
-    .cell.green {
-      background-color: #00ff00;
+    .green {
+      background-color: #00ff00 !important;
+    }
+
+    .hidden {
+      display: none !important;
     }
   </style>
 </head>
@@ -118,14 +114,14 @@
   <h1>Участие квартир в ОСС</h1>
   <div class="legend">
     <span class="legend-item">
-      <div class="legend-color"></div>
-      Приняли участие в ОСС: <span id="participated-count">0</span> квартир
+      <div class="legend-color"></div> Участвовал:
+      <span id="participated-count">0</span> квартир
     </span>
   </div>
 
-  <label for="entranceFilter">🔎 Показать только подъезд:</label>
+  <label for="entranceFilter">Фильтр по подъезду:</label>
   <select id="entranceFilter">
-    <option value="all">Все подъезды</option>
+    <option value="all">Все</option>
     <option value="0">Подъезд 1</option>
     <option value="1">Подъезд 2</option>
     <option value="2">Подъезд 3</option>
@@ -135,7 +131,6 @@
 
   <div class="building" id="building"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTVguQuI3g3Pw_do6G0OCFVx_BGhAigv1o8lIN_TIjKFURE2ntNXxYA8q7CrmC5kIBKajXiIOSSW7TN/pub?gid=1888694008&single=true&output=csv';
 
@@ -148,7 +143,7 @@
     ];
 
     const floors = 21;
-    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2); // этажи от 2 до 22
+    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2); // 2–22
 
     Papa.parse(csvUrl, {
       download: true,
@@ -158,70 +153,71 @@
         const greenSet = new Set();
 
         data.forEach(row => {
-          if (row["Квартира"] && row["Цвет"] && row["Цвет"].toLowerCase() === "#00ff00") {
-            greenSet.add(+row["Квартира"]);
+          const apt = row["Квартира"];
+          const color = row["Цвет"]?.toLowerCase();
+          if (apt && color === "#00ff00") {
+            greenSet.add(+apt);
           }
         });
 
+        document.getElementById("participated-count").textContent = greenSet.size;
+
         const buildingDiv = document.getElementById("building");
-        const countSpan = document.getElementById("participated-count");
-        countSpan.textContent = greenSet.size;
 
-        function renderBuildings(filterIndex = "all") {
-          buildingDiv.innerHTML = "";
+        entrances.forEach((entrance, index) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "entrance-block";
+          wrapper.dataset.entrance = index;
 
-          entrances.forEach((entrance, index) => {
-            if (filterIndex !== "all" && +filterIndex !== index) return;
+          const title = document.createElement("div");
+          title.className = "entrance-title";
+          title.textContent = `Подъезд ${index + 1}`;
 
-            const wrapper = document.createElement("div");
-            wrapper.className = "entrance-block";
+          const floorGroup = document.createElement("div");
+          floorGroup.className = "entrance";
 
-            const title = document.createElement("div");
-            title.className = "entrance-title";
-            title.textContent = `Подъезд ${index + 1}`;
+          const floorLabels = document.createElement("div");
+          floorLabels.className = "floor-labels";
 
-            const floorGroup = document.createElement("div");
-            floorGroup.className = "entrance";
+          const grid = document.createElement("div");
+          grid.className = "columns";
 
-            const floorLabels = document.createElement("div");
-            floorLabels.className = "floor-labels";
+          for (let i = 0; i < floors; i++) {
+            const floor = floors - 1 - i;
+            const row = document.createElement("div");
+            row.className = "row";
 
-            const grid = document.createElement("div");
-            grid.className = "columns";
-
-            for (let i = 0; i < floors; i++) {
-              const floor = floors - 1 - i;
-              const row = document.createElement("div");
-              row.className = "row";
-
-              for (let apt = 0; apt < entrance.count; apt++) {
-                const aptNumber = entrance.start + floor * entrance.count + apt;
-                const cell = document.createElement("div");
-                cell.className = "cell";
-                if (greenSet.has(aptNumber)) cell.classList.add("green");
-                cell.textContent = aptNumber;
-                row.appendChild(cell);
+            for (let apt = 0; apt < entrance.count; apt++) {
+              const aptNumber = entrance.start + floor * entrance.count + apt;
+              const cell = document.createElement("div");
+              cell.className = "cell";
+              if (greenSet.has(aptNumber)) {
+                cell.classList.add("green");
               }
-
-              const label = document.createElement("div");
-              label.textContent = floorNumbers[floor];
-              floorLabels.appendChild(label);
-              grid.appendChild(row);
+              cell.textContent = aptNumber;
+              row.appendChild(cell);
             }
 
-            floorGroup.appendChild(floorLabels);
-            floorGroup.appendChild(grid);
-            wrapper.appendChild(title);
-            wrapper.appendChild(floorGroup);
-            buildingDiv.appendChild(wrapper);
+            const label = document.createElement("div");
+            label.textContent = floorNumbers[floor];
+            floorLabels.appendChild(label);
+            grid.appendChild(row);
+          }
+
+          floorGroup.appendChild(floorLabels);
+          floorGroup.appendChild(grid);
+          wrapper.appendChild(title);
+          wrapper.appendChild(floorGroup);
+          buildingDiv.appendChild(wrapper);
+        });
+
+        // фильтр по подъезду
+        const filter = document.getElementById("entranceFilter");
+        filter.addEventListener("change", () => {
+          const value = filter.value;
+          document.querySelectorAll(".entrance-block").forEach((el, i) => {
+            el.classList.toggle("hidden", value !== "all" && value !== i.toString());
           });
-        }
-
-        // Initial render
-        renderBuildings();
-
-        document.getElementById("entranceFilter").addEventListener("change", (e) => {
-          renderBuildings(e.target.value);
         });
       }
     });
