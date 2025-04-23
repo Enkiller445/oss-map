@@ -95,6 +95,11 @@
     .row {
       display: flex;
       gap: 2px;
+      transition: background-color 0.2s ease;
+    }
+
+    .row.hovered-row {
+      background-color: rgba(0, 0, 0, 0.05);
     }
 
     .cell {
@@ -200,6 +205,11 @@
                 cell.className = "cell";
                 if (greenSet.has(aptNumber)) cell.classList.add("green");
                 cell.textContent = aptNumber;
+
+                // Наведение на ячейку => подсвечивает строку
+                cell.addEventListener("mouseenter", () => row.classList.add("hovered-row"));
+                cell.addEventListener("mouseleave", () => row.classList.remove("hovered-row"));
+
                 row.appendChild(cell);
               }
 
