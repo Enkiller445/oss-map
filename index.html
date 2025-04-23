@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Участие квартир в ОСС</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .grid { display: flex; flex-wrap: wrap; gap: 2px; max-width: 800px; }
+    .cell {
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid #ccc;
+      font-size: 10px;
+      background-color: #eee;
+    }
+    .cell.green { background-color: #00ff00; }
+  </style>
+</head>
+<body>
+  <h1>Участие квартир в ОСС</h1>
+  <div class="grid" id="grid"></div>
+
+  <script>
+    const participated = [101, 103, 124, 171, 247, 275, 285, 298, 483, 590]; // ← подставим позже автоматически
+
+    for (let i = 1; i <= 735; i++) {
+      const div = document.createElement('div');
+      div.textContent = i;
+      div.className = 'cell' + (participated.includes(i) ? ' green' : '');
+      document.getElementById('grid').appendChild(div);
+    }
+  </script>
+</body>
+</html>
