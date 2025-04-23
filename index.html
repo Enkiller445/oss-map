@@ -10,101 +10,128 @@
       padding: 20px;
       text-align: center;
     }
+
     h1 {
       margin-bottom: 30px;
     }
-    .grid {
+
+    .building {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 40px;
-      flex-wrap: wrap;
     }
+
     .entrance {
       display: flex;
       flex-direction: column-reverse;
-      align-items: center;
+      gap: 2px;
+      position: relative;
     }
-    .entrance h2 {
-      margin-bottom: 5px;
+
+    .row {
+      display: flex;
+      gap: 2px;
     }
+
     .cell {
-      width: 36px;
-      height: 36px;
+      width: 35px;
+      height: 35px;
+      background-color: #eee;
+      border: 1px solid #ccc;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid #ccc;
       font-size: 12px;
-      margin: 1px;
-      background: #fff;
+      box-sizing: border-box;
     }
+
     .cell.green {
       background-color: #00ff00;
     }
-    .floors {
+
+    .entrance-title {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .floor-label {
+      position: absolute;
+      left: -30px;
+      top: 0;
       display: flex;
       flex-direction: column-reverse;
-      align-items: flex-end;
-      margin-right: 10px;
+      height: 100%;
+      justify-content: space-between;
       font-size: 12px;
+      color: #666;
     }
-    .building {
+
+    .floor-label div {
+      height: 35px;
       display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 4px;
     }
   </style>
 </head>
 <body>
   <h1>Участие квартир в ОСС</h1>
-  <div class="grid">
-    <!-- Подъезды 1–5 -->
-    <!-- Нумерация этажей слева -->
-    <div class="building">
-      <div class="floors">
-        <!-- Этажи 2–22 -->
-        <script>
-          for (let i = 2; i <= 22; i++) {
-            const div = document.createElement('div');
-            div.textContent = i;
-            div.style.height = '38px';
-            document.currentScript.parentNode.appendChild(div);
-          }
-        </script>
-      </div>
-      <script>
-        const entrances = [
-          { id: 1, count: 5 },
-          { id: 2, count: 5 },
-          { id: 3, count: 6 },
-          { id: 4, count: 10 },
-          { id: 5, count: 9 },
-        ];
-        const participated = [101, 102, 103, 171, 247, 275, 285, 298, 483, 611, 612, 590];
+  <div class="building" id="building"></div>
 
-        let currentFlat = 1;
-        for (const entrance of entrances) {
-          const div = document.createElement('div');
-          div.className = 'entrance';
+  <script>
+    const entrances = [
+      { count: 5, start: 1 },
+      { count: 5, start: 106 },
+      { count: 6, start: 211 },
+      { count: 10, start: 337 },
+      { count: 9, start: 547 }
+    ];
 
-          const title = document.createElement('h2');
-          title.textContent = `Подъезд ${entrance.id}`;
-          div.appendChild(title);
+    const floors = 21;
+    const floorNumbers = Array.from({ length: floors }, (_, i) => 22 - i);
 
-          for (let floor = 2; floor <= 22; floor++) {
-            for (let i = 0; i < entrance.count; i++) {
-              const cell = document.createElement('div');
-              cell.className = 'cell';
-              cell.textContent = currentFlat;
-              if (participated.includes(currentFlat)) cell.classList.add('green');
-              div.appendChild(cell);
-              currentFlat++;
-            }
-          }
+    const participated = [101, 102, 103, 124, 171, 247, 275, 285, 298, 483, 590, 612];
 
-          document.querySelector('.grid').appendChild(div);
+    const buildingDiv = document.getElementById("building");
+
+    entrances.forEach((entrance, index) => {
+      const container = document.createElement("div");
+      container.className = "entrance";
+
+      const floorLabel = document.createElement("div");
+      floorLabel.className = "floor-label";
+
+      for (let floor = 0; floor < floors; floor++) {
+        const row = document.createElement("div");
+        row.className = "row";
+
+        for (let apt = 0; apt < entrance.count; apt++) {
+          const aptNumber = entrance.start + floor * entrance.count + apt;
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          if (participated.includes(aptNumber)) cell.classList.add("green");
+          cell.textContent = aptNumber;
+          row.appendChild(cell);
         }
-      </script>
-    </div>
-  </div>
+
+        const label = document.createElement("div");
+        label.textContent = floorNumbers[floor];
+        floorLabel.appendChild(label);
+
+        container.appendChild(row);
+      }
+
+      const label = document.createElement("div");
+      label.className = "entrance-title";
+      label.textContent = `Подъезд ${index + 1}`;
+
+      container.appendChild(label);
+      container.appendChild(floorLabel);
+      buildingDiv.appendChild(container);
+    });
+  </script>
 </body>
 </html>
 
