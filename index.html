@@ -1,121 +1,112 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Участие квартир в ОСС</title>
   <style>
     body {
       font-family: sans-serif;
-      background-color: #f9f9f9;
+      background: #f9f9f9;
       padding: 20px;
+      text-align: center;
     }
     h1 {
-      text-align: center;
       margin-bottom: 30px;
     }
-    .container {
+    .grid {
       display: flex;
       justify-content: center;
-      gap: 20px;
+      gap: 40px;
+      flex-wrap: wrap;
     }
-    .podjezd {
+    .entrance {
       display: flex;
-      flex-direction: column;
+      flex-direction: column-reverse;
       align-items: center;
     }
-    .podjezd h3 {
-      margin: 10px 0;
-    }
-    .column {
-      display: flex;
-      flex-direction: column;
+    .entrance h2 {
+      margin-bottom: 5px;
     }
     .cell {
       width: 36px;
-      height: 28px;
-      border: 1px solid #ccc;
-      text-align: center;
-      font-size: 12px;
-      background-color: #eee;
-      margin: 1px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
+      border: 1px solid #ccc;
+      font-size: 12px;
+      margin: 1px;
+      background: #fff;
     }
     .cell.green {
       background-color: #00ff00;
     }
-    .etazhi {
+    .floors {
       display: flex;
-      flex-direction: column;
+      flex-direction: column-reverse;
+      align-items: flex-end;
       margin-right: 10px;
+      font-size: 12px;
     }
-    .etazhi .cell {
-      background-color: transparent;
-      border: none;
-      font-weight: bold;
+    .building {
+      display: flex;
     }
   </style>
 </head>
 <body>
   <h1>Участие квартир в ОСС</h1>
-  <div style="display: flex; justify-content: center; align-items: start">
-    <div class="etazhi">
-      <!-- Номера этажей от 22 до 2 сверху вниз -->
+  <div class="grid">
+    <!-- Подъезды 1–5 -->
+    <!-- Нумерация этажей слева -->
+    <div class="building">
+      <div class="floors">
+        <!-- Этажи 2–22 -->
+        <script>
+          for (let i = 2; i <= 22; i++) {
+            const div = document.createElement('div');
+            div.textContent = i;
+            div.style.height = '38px';
+            document.currentScript.parentNode.appendChild(div);
+          }
+        </script>
+      </div>
       <script>
-        for (let floor = 22; floor >= 2; floor--) {
-          document.write(`<div class="cell">${floor}</div>`);
+        const entrances = [
+          { id: 1, count: 5 },
+          { id: 2, count: 5 },
+          { id: 3, count: 6 },
+          { id: 4, count: 10 },
+          { id: 5, count: 9 },
+        ];
+        const participated = [101, 102, 103, 171, 247, 275, 285, 298, 483, 611, 612, 590];
+
+        let currentFlat = 1;
+        for (const entrance of entrances) {
+          const div = document.createElement('div');
+          div.className = 'entrance';
+
+          const title = document.createElement('h2');
+          title.textContent = `Подъезд ${entrance.id}`;
+          div.appendChild(title);
+
+          for (let floor = 2; floor <= 22; floor++) {
+            for (let i = 0; i < entrance.count; i++) {
+              const cell = document.createElement('div');
+              cell.className = 'cell';
+              cell.textContent = currentFlat;
+              if (participated.includes(currentFlat)) cell.classList.add('green');
+              div.appendChild(cell);
+              currentFlat++;
+            }
+          }
+
+          document.querySelector('.grid').appendChild(div);
         }
       </script>
     </div>
-    <div class="container" id="container"></div>
   </div>
-
-  <script>
-    const podjezds = [
-      { count: 5, start: 1 },
-      { count: 5, start: 106 },
-      { count: 6, start: 211 },
-      { count: 10, start: 337 },
-      { count: 9, start: 547 },
-    ];
-    const floors = 21; // с 2 по 22 этаж — итого 21 этаж
-    const participated = [101, 102, 103, 171, 124, 247, 285, 298, 275, 483, 612, 611, 613, 590];
-
-    const container = document.getElementById('container');
-
-    podjezds.forEach((p, i) => {
-      const podjezd = document.createElement('div');
-      podjezd.className = 'podjezd';
-
-      const title = document.createElement('h3');
-      title.textContent = `Подъезд ${i + 1}`;
-      podjezd.appendChild(title);
-
-      for (let apt = 0; apt < p.count; apt++) {
-        const column = document.createElement('div');
-        column.className = 'column';
-
-        for (let floor = floors - 1; floor >= 0; floor--) {
-          const number = p.start + floor * p.count + apt;
-          const div = document.createElement('div');
-          div.className = 'cell';
-          div.textContent = number;
-          if (participated.includes(number)) {
-            div.classList.add('green');
-          }
-          column.appendChild(div);
-        }
-
-        podjezd.appendChild(column);
-      }
-
-      container.appendChild(podjezd);
-    });
-  </script>
 </body>
 </html>
-
 
 
 
