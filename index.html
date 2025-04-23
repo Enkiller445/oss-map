@@ -27,13 +27,19 @@
       align-items: center;
     }
 
+    .entrance-title {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
     .floor-group {
       display: flex;
+      align-items: flex-start;
     }
 
     .floor-labels {
       display: flex;
-      flex-direction: column-reverse;
+      flex-direction: column;
       margin-right: 5px;
     }
 
@@ -49,7 +55,7 @@
 
     .entrance {
       display: flex;
-      flex-direction: column-reverse;
+      flex-direction: column;
       gap: 2px;
     }
 
@@ -73,11 +79,6 @@
     .cell.green {
       background-color: #00ff00;
     }
-
-    .entrance-title {
-      margin-top: 10px;
-      font-weight: bold;
-    }
   </style>
 </head>
 <body>
@@ -94,7 +95,7 @@
     ];
 
     const floors = 21;
-    const floorNumbers = Array.from({ length: floors }, (_, i) => 22 - i);
+    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2); // этажи 2–22
 
     const participated = [101, 102, 103, 124, 171, 247, 275, 285, 298, 483, 590, 612];
 
@@ -103,6 +104,10 @@
     entrances.forEach((entrance, index) => {
       const wrapper = document.createElement("div");
       wrapper.className = "entrance-wrapper";
+
+      const title = document.createElement("div");
+      title.className = "entrance-title";
+      title.textContent = `Подъезд ${index + 1}`;
 
       const floorGroup = document.createElement("div");
       floorGroup.className = "floor-group";
@@ -119,12 +124,12 @@
       const entranceDiv = document.createElement("div");
       entranceDiv.className = "entrance";
 
-      for (let floor = 0; floor < floors; floor++) {
+      floorNumbers.forEach((floor, i) => {
         const row = document.createElement("div");
         row.className = "row";
 
         for (let apt = 0; apt < entrance.count; apt++) {
-          const aptNumber = entrance.start + floor * entrance.count + apt;
+          const aptNumber = entrance.start + i * entrance.count + apt;
           const cell = document.createElement("div");
           cell.className = "cell";
           if (participated.includes(aptNumber)) cell.classList.add("green");
@@ -133,17 +138,13 @@
         }
 
         entranceDiv.appendChild(row);
-      }
+      });
 
       floorGroup.appendChild(floorLabels);
       floorGroup.appendChild(entranceDiv);
 
-      const title = document.createElement("div");
-      title.className = "entrance-title";
-      title.textContent = `Подъезд ${index + 1}`;
-
-      wrapper.appendChild(floorGroup);
       wrapper.appendChild(title);
+      wrapper.appendChild(floorGroup);
       buildingDiv.appendChild(wrapper);
     });
   </script>
