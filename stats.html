@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Статистика участия в ОСС</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: "Segoe UI", sans-serif;
+      background-color: #d1eaf5;
+      color: #333;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .block {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 10px auto;
+      max-width: 600px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .section-title {
+      font-size: 18px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .stat {
+      font-size: 16px;
+      margin: 8px 0;
+    }
+
+    .green { color: #00c853; }
+    .blue { color: #6fa8dc; }
+    .yellow { color: #fbc02d; }
+    .red { color: #e53935; }
+    .gray { color: #666; }
+
+    footer {
+      margin-top: 30px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    @media (max-width: 600px) {
+      .block {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Статистика участия в ОСС</h1>
+
+<div class="block" id="stats-block">
+  <div class="section-title">Статистика по квартирам</div>
+  <div class="stat green">Проголосовали: <span id="green-count">0</span> квартир (<span id="green-percent">0</span>%)</div>
+  <div class="stat blue">Передали бюллетени: <span id="blue-count">0</span> квартир (<span id="blue-percent">0</span>%)</div>
+  <div class="stat yellow">Ожидается возврат: <span id="yellow-count">0</span> квартир (<span id="yellow-percent">0</span>%)</div>
+  <div class="stat red">Отказались: <span id="red-count">0</span> квартир (<span id="red-percent">0</span>%)</div>
+  <div class="stat gray">Нет данных: <span id="white-count">0</span> квартир (<span id="white-percent">0</span>%)</div>
+</div>
+
+<div class="block" id="analytics-block">
+  <div class="section-title">Аналитика и прогноз</div>
+  <div class="stat">Возможный кворум на сегодня: <span id="kvorum-today">0</span>%</div>
+  <div class="stat">ОСС идёт дней: <span id="days-passed">0</span></div>
+  <div class="stat">Средний темп голосования: <span id="avg-speed">0</span>% в день</div>
+  <div class="stat">ОСС осталось дней: <span id="days-left">0</span></div>
+  <div class="stat">Прогнозируемый кворум на конец: <span id="kvorum-final">0</span>%</div>
+</div>
+
+<footer>
+  Данные обновляются автоматически
+</footer>
+
+<script>
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRRbhD4HVJzaB0vZwakUhpv0rHu3LvS0Gxq3zl4Qo9dANsvW8LosfiylBqljl2dVV1vmMNpOpP0516/pub?gid=63142697&single=true&output=csv';
+const TOTAL_APARTMENTS = 735;
+const startDate = new Date('2025-04-10');
+const endDate = new Date('2025-08-10');
+
+Papa.parse(csvUrl, {
+  download: true,
+  header: true,
+  complete: function(results) {
+    const data = results.data;
+    let counts = {
+      green: 0,
+      blue: 0,
+      yellow: 0,
+      red: 0,
+      white: 0
+    };
+
+    data.forEach(row => {
+      const color = row["Цвет"]?.trim().toLowerCase();
+      if (color === "#00ff00") counts.green++;
+      else if (color === "#6fa8dc" || color === "#6d9eeb") counts.blue++;
+      else if (color === "#ffff00") counts.yellow++;
+      else if (color === "#ff0000") counts.red++;
+      else if (color === "#ffffff" || !color) counts.white++;
+    });
+
+    document.getElementById("green-count").textContent = counts.green;
+    document.getElementById("blue-count").textContent = counts.blue;
+    document.getElementById("yellow-count").textContent = counts.yellow;
+    document.getElementById("red-count").textContent = counts.red;
+    document.getElementById("white-count").textContent = counts.white;
+
+    document.getElementById("green-percent").textContent = ((counts.green / TOTAL_APARTMENTS) * 100).toFixed(1);
+    document.getElementById("blue-percent").textContent = ((counts.blue / TOTAL_APARTMENTS) * 100).toFixed(1);
+    document.getElementById("yellow-percent").textContent = ((counts.yellow / TOTAL_APARTMENTS) * 100).toFixed(1);
+    document.getElementById("red-percent").textContent = ((counts.red / TOTAL_APARTMENTS) * 100).toFixed(1);
+    document.getElementById("white-percent").textContent = ((counts.white / TOTAL_APARTMENTS) * 100).toFixed(1);
+
+    const now = new Date();
+    const daysPassed = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+    const daysLeft = Math.max(0, Math.floor((endDate - now) / (1000 * 60 * 60 * 24)));
+
+    const percentGreen = (counts.green / TOTAL_APARTMENTS) * 100;
+    const percentBlue = (counts.blue / TOTAL_APARTMENTS) * 100;
+    const percentYellow = (counts.yellow / TOTAL_APARTMENTS) * 100;
+
+    const kvorumToday = (percentGreen + percentBlue + percentYellow).toFixed(1);
+    const avgSpeed = daysPassed > 0 ? (percentGreen / daysPassed).toFixed(2) : "0";
+    const kvorumFinal = (parseFloat(avgSpeed) * daysLeft + percentGreen).toFixed(1);
+
+    document.getElementById("kvorum-today").textContent = kvorumToday;
+    document.getElementById("days-passed").textContent = daysPassed;
+    document.getElementById("days-left").textContent = daysLeft;
+    document.getElementById("avg-speed").textContent = avgSpeed;
+    document.getElementById("kvorum-final").textContent = kvorumFinal;
+  }
+});
+</script>
+
+</body>
+</html>
