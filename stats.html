@@ -46,6 +46,22 @@
     .red { color: #e53935; }
     .gray { color: #666; }
 
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #ccc;
+      border-top: 2px solid #666;
+      border-radius: 50%;
+      display: inline-block;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     footer {
       margin-top: 30px;
       font-size: 12px;
@@ -65,26 +81,25 @@
 
 <div class="block" id="stats-block">
   <div class="section-title">Статистика по квартирам</div>
-  <div class="stat green">✅ Приняли участие: <span id="green-count">0</span> квартир (<span id="green-percent">0</span>%)</div>
-  <div class="stat blue">📄 Ожидают голосования: <span id="blue-count">0</span> квартир (<span id="blue-percent">0</span>%)</div>
-  <div class="stat yellow">🕒 Готовят решение: <span id="yellow-count">0</span> квартир (<span id="yellow-percent">0</span>%)</div>
-  <div class="stat red">❌ Отказались участвовать: <span id="red-count">0</span> квартир (<span id="red-percent">0</span>%)</div>
-  <div class="stat gray">❓ Пока не приняли участие: <span id="white-count">0</span> квартир (<span id="white-percent">0</span>%)</div>
+  <div class="stat green">✅ Приняли участие: <span id="green-count"><span class="spinner"></span></span> квартир (<span id="green-percent"><span class="spinner"></span></span>%)</div>
+  <div class="stat blue">📄 Ожидают голосования: <span id="blue-count"><span class="spinner"></span></span> квартир (<span id="blue-percent"><span class="spinner"></span></span>%)</div>
+  <div class="stat yellow">🕒 Готовят решение: <span id="yellow-count"><span class="spinner"></span></span> квартир (<span id="yellow-percent"><span class="spinner"></span></span>%)</div>
+  <div class="stat red">❌ Отказались участвовать: <span id="red-count"><span class="spinner"></span></span> квартир (<span id="red-percent"><span class="spinner"></span></span>%)</div>
+  <div class="stat gray">❓ Пока не приняли участие: <span id="white-count"><span class="spinner"></span></span> квартир (<span id="white-percent"><span class="spinner"></span></span>%)</div>
 </div>
 
 <div class="block" id="analytics-block">
   <div class="section-title">Аналитика и прогноз</div>
-  <div class="stat">Возможный кворум на сегодня: <span id="kvorum-today">0</span>%</div>
-  <div class="stat">ОСС идёт дней: <span id="days-passed">0</span></div>
-  <div class="stat">Средний темп участия: <span id="avg-speed">0</span>% в день</div>
-  <div class="stat">ОСС осталось дней: <span id="days-left">0</span></div>
-  <div class="stat">Прогнозируемый кворум на конец: <span id="kvorum-final">0</span>%</div>
+  <div class="stat">Возможный кворум на сегодня: <span id="kvorum-today"><span class="spinner"></span></span>%</div>
+  <div class="stat">ОСС идёт дней: <span id="days-passed"><span class="spinner"></span></span></div>
+  <div class="stat">Средний темп участия: <span id="avg-speed"><span class="spinner"></span></span>% в день</div>
+  <div class="stat">ОСС осталось дней: <span id="days-left"><span class="spinner"></span></span></div>
+  <div class="stat">Прогнозируемый кворум на конец: <span id="kvorum-final"><span class="spinner"></span></span>%</div>
 </div>
 
 <footer>
   Данные обновляются автоматически
 </footer>
-
 
 <script>
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRRbhD4HVJzaB0vZwakUhpv0rHu3LvS0Gxq3zl4Qo9dANsvW8LosfiylBqljl2dVV1vmMNpOpP0516/pub?gid=63142697&single=true&output=csv';
@@ -114,17 +129,22 @@ Papa.parse(csvUrl, {
       else if (color === "#ffffff" || !color) counts.white++;
     });
 
-    document.getElementById("green-count").textContent = counts.green;
-    document.getElementById("blue-count").textContent = counts.blue;
-    document.getElementById("yellow-count").textContent = counts.yellow;
-    document.getElementById("red-count").textContent = counts.red;
-    document.getElementById("white-count").textContent = counts.white;
+    function updateValue(id, value) {
+      const el = document.getElementById(id);
+      el.innerHTML = value; // Заменяем весь spinner на число
+    }
 
-    document.getElementById("green-percent").textContent = ((counts.green / TOTAL_APARTMENTS) * 100).toFixed(1);
-    document.getElementById("blue-percent").textContent = ((counts.blue / TOTAL_APARTMENTS) * 100).toFixed(1);
-    document.getElementById("yellow-percent").textContent = ((counts.yellow / TOTAL_APARTMENTS) * 100).toFixed(1);
-    document.getElementById("red-percent").textContent = ((counts.red / TOTAL_APARTMENTS) * 100).toFixed(1);
-    document.getElementById("white-percent").textContent = ((counts.white / TOTAL_APARTMENTS) * 100).toFixed(1);
+    updateValue("green-count", counts.green);
+    updateValue("blue-count", counts.blue);
+    updateValue("yellow-count", counts.yellow);
+    updateValue("red-count", counts.red);
+    updateValue("white-count", counts.white);
+
+    updateValue("green-percent", ((counts.green / TOTAL_APARTMENTS) * 100).toFixed(1));
+    updateValue("blue-percent", ((counts.blue / TOTAL_APARTMENTS) * 100).toFixed(1));
+    updateValue("yellow-percent", ((counts.yellow / TOTAL_APARTMENTS) * 100).toFixed(1));
+    updateValue("red-percent", ((counts.red / TOTAL_APARTMENTS) * 100).toFixed(1));
+    updateValue("white-percent", ((counts.white / TOTAL_APARTMENTS) * 100).toFixed(1));
 
     const now = new Date();
     const daysPassed = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
@@ -138,11 +158,11 @@ Papa.parse(csvUrl, {
     const avgSpeed = daysPassed > 0 ? (percentGreen / daysPassed).toFixed(2) : "0";
     const kvorumFinal = (parseFloat(avgSpeed) * daysLeft + percentGreen).toFixed(1);
 
-    document.getElementById("kvorum-today").textContent = kvorumToday;
-    document.getElementById("days-passed").textContent = daysPassed;
-    document.getElementById("days-left").textContent = daysLeft;
-    document.getElementById("avg-speed").textContent = avgSpeed;
-    document.getElementById("kvorum-final").textContent = kvorumFinal;
+    updateValue("kvorum-today", kvorumToday);
+    updateValue("days-passed", daysPassed);
+    updateValue("days-left", daysLeft);
+    updateValue("avg-speed", avgSpeed);
+    updateValue("kvorum-final", kvorumFinal);
   }
 });
 </script>
