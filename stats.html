@@ -65,18 +65,18 @@
 
 <div class="block" id="stats-block">
   <div class="section-title">Статистика по квартирам</div>
-  <div class="stat green">Проголосовали: <span id="green-count">0</span> квартир (<span id="green-percent">0</span>%)</div>
-  <div class="stat blue">Передали бюллетени: <span id="blue-count">0</span> квартир (<span id="blue-percent">0</span>%)</div>
-  <div class="stat yellow">Ожидается возврат: <span id="yellow-count">0</span> квартир (<span id="yellow-percent">0</span>%)</div>
-  <div class="stat red">Отказались: <span id="red-count">0</span> квартир (<span id="red-percent">0</span>%)</div>
-  <div class="stat gray">Нет данных: <span id="white-count">0</span> квартир (<span id="white-percent">0</span>%)</div>
+  <div class="stat green">✅ Приняли участие: <span id="green-count">0</span> квартир (<span id="green-percent">0</span>%)</div>
+  <div class="stat blue">📄 Ожидают голосования: <span id="blue-count">0</span> квартир (<span id="blue-percent">0</span>%)</div>
+  <div class="stat yellow">🕒 Готовят решение: <span id="yellow-count">0</span> квартир (<span id="yellow-percent">0</span>%)</div>
+  <div class="stat red">❌ Отказались участвовать: <span id="red-count">0</span> квартир (<span id="red-percent">0</span>%)</div>
+  <div class="stat gray">❓ Пока не приняли участие: <span id="white-count">0</span> квартир (<span id="white-percent">0</span>%)</div>
 </div>
 
 <div class="block" id="analytics-block">
   <div class="section-title">Аналитика и прогноз</div>
   <div class="stat">Возможный кворум на сегодня: <span id="kvorum-today">0</span>%</div>
   <div class="stat">ОСС идёт дней: <span id="days-passed">0</span></div>
-  <div class="stat">Средний темп голосования: <span id="avg-speed">0</span>% в день</div>
+  <div class="stat">Средний темп участия: <span id="avg-speed">0</span>% в день</div>
   <div class="stat">ОСС осталось дней: <span id="days-left">0</span></div>
   <div class="stat">Прогнозируемый кворум на конец: <span id="kvorum-final">0</span>%</div>
 </div>
@@ -84,6 +84,7 @@
 <footer>
   Данные обновляются автоматически
 </footer>
+
 
 <script>
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRRbhD4HVJzaB0vZwakUhpv0rHu3LvS0Gxq3zl4Qo9dANsvW8LosfiylBqljl2dVV1vmMNpOpP0516/pub?gid=63142697&single=true&output=csv';
