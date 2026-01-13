@@ -80,12 +80,14 @@
       display:flex;
       flex-direction:column;
       align-items:center;
+      max-width: 100%;
     }
 
     .entrance-title{
       font-weight:700;
       margin-bottom:8px;
       font-size:14px;
+      text-align:center;
     }
 
     .entrance{
@@ -178,6 +180,18 @@
       letter-spacing:-0.4px;
     }
 
+    /* ===== Горизонтальный скролл для паркинга (мобилка) ===== */
+    .parking-scroll{
+      width:100%;
+      overflow-x:auto;
+      overflow-y:hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 6px;
+    }
+    .parking-scroll .columns{
+      width:max-content; /* не сжимать сетку */
+    }
+
     .tooltip{
       position:fixed;
       pointer-events:none;
@@ -223,6 +237,11 @@
         font-weight:900;
         letter-spacing:-0.3px;
       }
+
+      /* чтобы на телефоне скролл-блок не вылезал */
+      .parking-scroll{
+        max-width: 92vw;
+      }
     }
   </style>
 </head>
@@ -237,6 +256,7 @@
     Здесь нет ФИО, телефонов и иных персональных данных — только номера объектов и комментарии к отдельным случаям.
     <div class="sub">
       Паркинг: «мм …» = -1 этаж (mm1), «мм2_…» = -2 этаж (mm2). На -2 часть мест показана парами (например 151/152).
+      На телефоне паркинг можно прокручивать по горизонтали (свайп).
     </div>
   </div>
 
@@ -271,7 +291,7 @@
   <div id="tooltip" class="tooltip"></div>
 
   <script>
-    // ===== Квартиры: как у тебя =====
+    // ===== Квартиры: структура подъездов =====
     const entrances = [
       { count: 5, start: 1 },
       { count: 5, start: 106 },
@@ -286,12 +306,12 @@
     // data.json: { "apt:10":{mark:true,comment:""}, "mm1:82":..., "mm2:141":... }
     let dataMap = {};
 
-    function keyApt(n){ return `apt:${n}`; }
-    function keyMm1(n){ return `mm1:${n}`; }
-    function keyMm2(n){ return `mm2:${n}`; }
+    const keyApt = (n) => `apt:${n}`;
+    const keyMm1 = (n) => `mm1:${n}`;
+    const keyMm2 = (n) => `mm2:${n}`;
 
-    function isMarked(key){ return dataMap[key]?.mark === true; }
-    function getComment(key){ return dataMap[key]?.comment ? String(dataMap[key].comment) : ""; }
+    const isMarked = (key) => dataMap[key]?.mark === true;
+    const getComment = (key) => dataMap[key]?.comment ? String(dataMap[key].comment) : "";
 
     // ===== Tooltip =====
     const tooltip = document.getElementById("tooltip");
@@ -330,7 +350,7 @@
       return null;
     }
 
-    // ===== Загружаем data.json, потом comments.csv, потом рендер =====
+    // ===== Загрузка data.json -> загрузка comments.csv -> render =====
     fetch("./data.json", { cache:"no-store" })
       .then(r => r.ok ? r.json() : {})
       .then(json => {
@@ -372,7 +392,7 @@
       addSingles(153,161);
       addPairs(162,169);
       addSingles(170,192);
-      addPairs(193,202);    // трактуем 193/194...201/202
+      addPairs(193,202);    // 193/194...201/202
       addSingles(203,231);
       addPairs(232,243);
       addSingles(244,252);
@@ -535,7 +555,7 @@
       });
     }
 
-    // ===== Рендер паркинга -1 и -2 =====
+    // ===== Рендер паркинга -1 и -2 (со скроллом на мобилке) =====
     function renderParking(buildingDiv, searchObj, mode){
       if(!(mode==="all" || mode==="mm1" || mode==="mm2")) return;
 
@@ -600,7 +620,12 @@
         }
 
         wrapper.appendChild(title);
-        wrapper.appendChild(grid);
+
+        const scroll = document.createElement("div");
+        scroll.className = "parking-scroll";
+        scroll.appendChild(grid);
+        wrapper.appendChild(scroll);
+
         buildingDiv.appendChild(wrapper);
       }
 
@@ -618,7 +643,6 @@
 
         const cells = buildMm2Cells();
         const perRow = 16; // баланс: не простыня и читаемо
-
         const searchMm2 = (searchObj?.type==="mm2") ? searchObj.n : NaN;
 
         for(let i=0; i<cells.length; i+=perRow){
@@ -642,7 +666,6 @@
               cell.classList.add("highlight");
             }
 
-            // комментарии: показываем, если есть на любом из ключей
             const comments = keys.map(k => getComment(k)).filter(Boolean);
             const comment = comments.length ? comments.join("\n") : "";
 
@@ -664,7 +687,12 @@
         }
 
         wrapper.appendChild(title);
-        wrapper.appendChild(grid);
+
+        const scroll = document.createElement("div");
+        scroll.className = "parking-scroll";
+        scroll.appendChild(grid);
+        wrapper.appendChild(scroll);
+
         buildingDiv.appendChild(wrapper);
       }
     }
