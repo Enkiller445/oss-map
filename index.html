@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>ОСС — шахматка голосования</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ОСС — шахматка квартир и паркинга</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
     body {
@@ -20,7 +20,28 @@
       text-align: center;
     }
 
-    main { display: flex; flex-direction: column; align-items: center; }
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #loading {
+      font-weight: bold;
+      margin: 20px;
+      font-size: 16px;
+      color: #444;
+    }
+
+    .spinner {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
     .info-panel {
       display: flex;
@@ -55,47 +76,6 @@
       .filters input, .filters select { width: 100%; max-width: 320px; }
     }
 
-    .building { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; }
-
-    .entrance-block { display: flex; flex-direction: column; align-items: center; }
-
-    .entrance-title { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
-
-    .entrance { display: flex; }
-
-    .floor-labels { display: flex; flex-direction: column; margin-right: 5px; }
-    .floor-labels div {
-      height: 28px; display: flex; align-items: center; justify-content: flex-end;
-      font-size: 11px; color: #555; width: 22px; font-weight: bold;
-    }
-
-    .columns { display: flex; flex-direction: column; }
-    .row { display: flex; gap: 2px; }
-
-    .cell {
-      width: 28px; height: 28px;
-      border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 10px;
-      box-shadow: 0 0 2px rgba(0,0,0,0.05);
-      box-sizing: border-box;
-      position: relative;
-      user-select: none;
-      cursor: default;
-    }
-
-    /* Статусы */
-    .cell.voted { background-color: #00c853; color: #fff; font-weight: bold; }
-    .cell.notvoted { background-color: #fffdf5; border: 1px solid #ccc; color: #333; }
-
-    .cell.highlight {
-      outline: 2px solid #ffeb3b !important;
-      background-color: #fff59d !important;
-      color: #000 !important;
-      font-weight: bold;
-      z-index: 10;
-    }
-
     #apt-info {
       background: #ffffffaa;
       padding: 12px 16px;
@@ -110,16 +90,99 @@
       display: none;
     }
 
-    #loading { font-weight: bold; margin: 20px; font-size: 16px; color: #444; }
-    .spinner { display: inline-block; animation: spin 1s linear infinite; }
-    @keyframes spin { 0% {transform:rotate(0)} 100% {transform:rotate(360deg)} }
+    .building {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 40px;
+      width: 100%;
+    }
+
+    .entrance-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .entrance-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .entrance {
+      display: flex;
+    }
+
+    .floor-labels {
+      display: flex;
+      flex-direction: column;
+      margin-right: 5px;
+    }
+
+    .floor-labels div {
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-size: 11px;
+      color: #555;
+      width: 22px;
+      font-weight: bold;
+    }
+
+    .columns {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .row {
+      display: flex;
+      gap: 2px;
+    }
+
+    .cell {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      box-shadow: 0 0 2px rgba(0,0,0,0.05);
+      box-sizing: border-box;
+      position: relative;
+      user-select: none;
+      cursor: default;
+    }
+
+    /* Статусы */
+    .cell.voted {
+      background-color: #00c853;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .cell.notvoted {
+      background-color: #fffdf5;
+      border: 1px solid #ccc;
+      color: #333;
+    }
+
+    .cell.highlight {
+      outline: 2px solid #ffeb3b !important;
+      background-color: #fff59d !important;
+      color: #000 !important;
+      font-weight: bold;
+      z-index: 10;
+    }
 
     /* Tooltip-комментарий */
     .tooltip {
       position: fixed;
       pointer-events: none;
       background: rgba(0,0,0,0.82);
-      color: white;
+      color: #fff;
       padding: 8px 10px;
       border-radius: 8px;
       font-size: 12px;
@@ -130,6 +193,15 @@
       white-space: pre-wrap;
     }
 
+    /* Разделитель */
+    .section-sep {
+      width: 100%;
+      max-width: 1100px;
+      height: 1px;
+      background: rgba(0,0,0,0.12);
+      margin: 18px 0;
+    }
+
     @media (max-width: 768px) {
       .cell { width: 24px; height: 24px; font-size: 9px; }
       .floor-labels div { height: 24px; font-size: 9px; }
@@ -138,7 +210,9 @@
 </head>
 
 <body>
-  <header><h1>Статус квартир по участию в ОСС</h1></header>
+  <header>
+    <h1>Статус по ОСС: квартиры + паркинг</h1>
+  </header>
 
   <main>
     <div id="loading">Загрузка данных... <span class="spinner">⏳</span></div>
@@ -150,7 +224,8 @@
       </div>
 
       <div class="analytics-column">
-        <div><strong>Всего квартир:</strong> <span id="count-total">⏳</span></div>
+        <div><strong>Всего объектов:</strong> <span id="count-total">⏳</span></div>
+        <div style="opacity:.8; font-size:12px;">Объекты = квартиры + машиноместа (в выбранном фильтре)</div>
       </div>
     </div>
 
@@ -166,19 +241,30 @@
         </select>
       </label>
 
-      <label for="aptSearch">Квартира:
-        <input type="search" id="aptSearch" placeholder="Номер" oninput="render()" />
+      <label for="objectFilter">Показывать:
+        <select id="objectFilter" onchange="render()">
+          <option value="all">Квартиры + Паркинг</option>
+          <option value="apt">Только квартиры</option>
+          <option value="mm">Только паркинг</option>
+        </select>
+      </label>
+
+      <label for="aptSearch">Поиск (кв/мм):
+        <input type="search" id="aptSearch" placeholder="Напр: 10 или мм162" oninput="render()" />
       </label>
     </div>
 
     <div id="apt-info"></div>
+
     <div class="building" id="building"></div>
   </main>
 
   <div id="tooltip" class="tooltip"></div>
 
   <script>
-    // ====== НАСТРОЙКИ ДОМА (оставил как у тебя) ======
+    // =========================
+    // 1) НАСТРОЙКИ ДОМА (КВАРТИРЫ)
+    // =========================
     const entrances = [
       { count: 5, start: 1 },
       { count: 5, start: 106 },
@@ -189,12 +275,76 @@
     const floors = 21;
     const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
 
-    // ====== ДАННЫЕ ======
-    // dataMap: { "10": { voted: true/false, comment: "..." }, ... }
+    // =========================
+    // 2) НАСТРОЙКИ ПАРКИНГА (ПРИМЕР)
+    //    Подгони под реальную нумерацию/форму:
+    //    - start: с какого номера начинается
+    //    - perRow: сколько мест в ряду
+    //    - rows: сколько рядов
+    // =========================
+    const parkings = [
+      { name: "Паркинг", start: 1, perRow: 20, rows: 10 } // 200 мест: 1..200
+      // Можно добавить второй уровень:
+      // { name: "Паркинг (-2)", start: 201, perRow: 20, rows: 10 } // 201..400
+    ];
+
+    // =========================
+    // 3) ДАННЫЕ
+    // dataMap: { "apt:10": {voted:true, comment:"..."}, "mm:162": {...} }
+    // =========================
     let dataMap = {};
 
-    // Грузим JSON из репозитория
-    fetch('./data.json', { cache: "no-store" })
+    function keyApt(n) { return `apt:${n}`; }
+    function keyMm(n) { return `mm:${n}`; }
+
+    function getStatusByKey(key) {
+      const rec = dataMap[key];
+      return rec?.voted === true ? "voted" : "notvoted";
+    }
+    function getCommentByKey(key) {
+      const rec = dataMap[key];
+      return rec?.comment ? String(rec.comment) : "";
+    }
+
+    // =========================
+    // 4) TOOLTIP
+    // =========================
+    const tooltip = document.getElementById("tooltip");
+
+    function showTooltip(text, x, y) {
+      tooltip.textContent = text;
+      tooltip.style.display = "block";
+      tooltip.style.left = (x + 12) + "px";
+      tooltip.style.top = (y + 12) + "px";
+    }
+    function hideTooltip() {
+      tooltip.style.display = "none";
+      tooltip.textContent = "";
+    }
+
+    // =========================
+    // 5) ПОИСК: "10", "кв 10", "мм162", "м/м 162", "м.м.162"
+    // =========================
+    function parseSearch(input) {
+      const s = String(input || "").trim().toLowerCase();
+      if (!s) return null;
+
+      const mm = s.match(/(мм|м\/м|м\.м)\s*\.?\s*(\d+)/);
+      if (mm) return { type: "mm", n: parseInt(mm[2], 10) };
+
+      const apt = s.match(/(кв)\s*\.?\s*(\d+)/);
+      if (apt) return { type: "apt", n: parseInt(apt[2], 10) };
+
+      const num = s.match(/^(\d+)$/);
+      if (num) return { type: "apt", n: parseInt(num[1], 10) };
+
+      return null;
+    }
+
+    // =========================
+    // 6) ЗАГРУЗКА data.json
+    // =========================
+    fetch("./data.json", { cache: "no-store" })
       .then(r => {
         if (!r.ok) throw new Error("Не удалось загрузить data.json");
         return r.json();
@@ -208,35 +358,43 @@
         document.getElementById("loading").textContent = "Ошибка загрузки данных: " + err.message;
       });
 
-    function getAptStatus(aptNumber) {
-      const rec = dataMap[String(aptNumber)];
-      if (rec && rec.voted === true) return "voted";
-      return "notvoted";
-    }
-
-    function getAptComment(aptNumber) {
-      const rec = dataMap[String(aptNumber)];
-      return rec?.comment ? String(rec.comment) : "";
-    }
-
-    function updateStatistics() {
+    // =========================
+    // 7) СТАТИСТИКА
+    // =========================
+    function updateStatistics(mode) {
       const selectedEntrance = document.getElementById("entranceFilter").value;
 
       let voted = 0, notvoted = 0, total = 0;
 
-      entrances.forEach((entrance, index) => {
-        const entranceNumber = index + 1;
-        if (selectedEntrance !== 'all' && parseInt(selectedEntrance) !== entranceNumber) return;
+      // Квартиры
+      if (mode === "all" || mode === "apt") {
+        entrances.forEach((entrance, index) => {
+          const entranceNumber = index + 1;
+          if (selectedEntrance !== "all" && parseInt(selectedEntrance, 10) !== entranceNumber) return;
 
-        for (let floor = 0; floor < floors; floor++) {
-          for (let i = 0; i < entrance.count; i++) {
-            const aptNumber = entrance.start + floor * entrance.count + i;
-            const status = getAptStatus(aptNumber);
+          for (let floor = 0; floor < floors; floor++) {
+            for (let i = 0; i < entrance.count; i++) {
+              const aptNumber = entrance.start + floor * entrance.count + i;
+              const status = getStatusByKey(keyApt(aptNumber));
+              if (status === "voted") voted++; else notvoted++;
+              total++;
+            }
+          }
+        });
+      }
+
+      // Паркинг
+      if (mode === "all" || mode === "mm") {
+        parkings.forEach(p => {
+          const totalMm = p.perRow * p.rows;
+          for (let i = 0; i < totalMm; i++) {
+            const mmNumber = p.start + i;
+            const status = getStatusByKey(keyMm(mmNumber));
             if (status === "voted") voted++; else notvoted++;
             total++;
           }
-        }
-      });
+        });
+      }
 
       document.getElementById("count-voted").textContent = voted;
       document.getElementById("count-notvoted").textContent = notvoted;
@@ -246,32 +404,18 @@
       document.getElementById("percent-notvoted").textContent = total ? ((notvoted / total) * 100).toFixed(1) : "0";
     }
 
-    const tooltip = document.getElementById("tooltip");
-
-    function showTooltip(text, x, y) {
-      tooltip.textContent = text;
-      tooltip.style.display = "block";
-      tooltip.style.left = (x + 12) + "px";
-      tooltip.style.top = (y + 12) + "px";
-    }
-
-    function hideTooltip() {
-      tooltip.style.display = "none";
-      tooltip.textContent = "";
-    }
-
-    function render() {
-      updateStatistics();
-
-      const buildingDiv = document.getElementById("building");
-      buildingDiv.innerHTML = '';
+    // =========================
+    // 8) РЕНДЕР КВАРТИР
+    // =========================
+    function renderApartments(buildingDiv, searchObj, mode) {
+      if (!(mode === "all" || mode === "apt")) return;
 
       const selectedEntrance = document.getElementById("entranceFilter").value;
-      const searchApt = parseInt(document.getElementById("aptSearch").value);
+      const searchApt = (searchObj?.type === "apt") ? searchObj.n : NaN;
 
       entrances.forEach((entrance, index) => {
         const entranceNumber = index + 1;
-        if (selectedEntrance !== 'all' && parseInt(selectedEntrance) !== entranceNumber) return;
+        if (selectedEntrance !== "all" && parseInt(selectedEntrance, 10) !== entranceNumber) return;
 
         const wrapper = document.createElement("div");
         wrapper.className = "entrance-block";
@@ -296,23 +440,21 @@
 
           for (let j = 0; j < entrance.count; j++) {
             const aptNumber = entrance.start + floor * entrance.count + j;
+            const key = keyApt(aptNumber);
 
             const cell = document.createElement("div");
             cell.className = "cell";
+            cell.textContent = aptNumber;
 
-            const status = getAptStatus(aptNumber);
+            const status = getStatusByKey(key);
             cell.classList.add(status);
 
             if (aptNumber === searchApt) cell.classList.add("highlight");
-            cell.textContent = aptNumber;
 
-            // hover/tap комментарий
-            const comment = getAptComment(aptNumber);
+            const comment = getCommentByKey(key);
             if (comment) {
               cell.addEventListener("mousemove", (e) => showTooltip(comment, e.clientX, e.clientY));
               cell.addEventListener("mouseleave", hideTooltip);
-
-              // на мобиле: тап показать/скрыть
               cell.addEventListener("click", (e) => {
                 if (tooltip.style.display === "block") hideTooltip();
                 else showTooltip(comment, e.clientX, e.clientY);
@@ -337,44 +479,154 @@
         wrapper.appendChild(floorGroup);
         buildingDiv.appendChild(wrapper);
       });
+    }
 
-      // Карточка по введённой квартире
-      const aptInfo = document.getElementById("apt-info");
-      if (!isNaN(searchApt)) {
-        let found = false;
+    // =========================
+    // 9) РЕНДЕР ПАРКИНГА
+    // =========================
+    function renderParking(buildingDiv, searchObj, mode) {
+      if (!(mode === "all" || mode === "mm")) return;
 
-        for (let e = 0; e < entrances.length; e++) {
-          const entrance = entrances[e];
-          const start = entrance.start;
-          const end = entrance.start + entrance.count * floors;
-
-          if (searchApt >= start && searchApt < end) {
-            const localIndex = searchApt - start;
-            const floor = Math.floor(localIndex / entrance.count) + 2;
-            const status = getAptStatus(searchApt);
-            const comment = getAptComment(searchApt);
-
-            aptInfo.innerHTML = `
-              🏠 <strong>Квартира ${searchApt}</strong><br>
-              🚪 Подъезд <strong>${e + 1}</strong><br>
-              ⬆ Этаж <strong>${floor}</strong><br>
-              ${status === "voted" ? "🟢 <strong>проголосовали</strong>" : "⚪ <strong>не проголосовали</strong>"}
-              ${comment ? `<br><br>💬 ${comment}` : ""}
-            `;
-            aptInfo.style.display = "block";
-            found = true;
-            break;
-          }
-        }
-
-        if (!found) {
-          aptInfo.textContent = `Квартира ${searchApt} не найдена в структуре подъездов`;
-          aptInfo.style.display = "block";
-        }
-      } else {
-        aptInfo.innerHTML = '';
-        aptInfo.style.display = "none";
+      // Разделитель (если одновременно квартиры и паркинг)
+      if (mode === "all") {
+        const sep = document.createElement("div");
+        sep.className = "section-sep";
+        buildingDiv.appendChild(sep);
       }
+
+      const searchMm = (searchObj?.type === "mm") ? searchObj.n : NaN;
+
+      parkings.forEach(p => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "entrance-block";
+
+        const title = document.createElement("div");
+        title.className = "entrance-title";
+        title.textContent = p.name;
+
+        const grid = document.createElement("div");
+        grid.className = "columns";
+
+        for (let r = 0; r < p.rows; r++) {
+          const row = document.createElement("div");
+          row.className = "row";
+
+          for (let c = 0; c < p.perRow; c++) {
+            const mmNumber = p.start + r * p.perRow + c;
+            const key = keyMm(mmNumber);
+
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.textContent = mmNumber;
+
+            const status = getStatusByKey(key);
+            cell.classList.add(status);
+
+            if (mmNumber === searchMm) cell.classList.add("highlight");
+
+            const comment = getCommentByKey(key);
+            if (comment) {
+              cell.addEventListener("mousemove", (e) => showTooltip(comment, e.clientX, e.clientY));
+              cell.addEventListener("mouseleave", hideTooltip);
+              cell.addEventListener("click", (e) => {
+                if (tooltip.style.display === "block") hideTooltip();
+                else showTooltip(comment, e.clientX, e.clientY);
+              });
+            } else {
+              cell.addEventListener("mouseleave", hideTooltip);
+            }
+
+            row.appendChild(cell);
+          }
+
+          grid.appendChild(row);
+        }
+
+        wrapper.appendChild(title);
+        wrapper.appendChild(grid);
+        buildingDiv.appendChild(wrapper);
+      });
+    }
+
+    // =========================
+    // 10) КАРТОЧКА ПОИСКА (квартира/мм)
+    // =========================
+    function renderInfo(searchObj) {
+      const info = document.getElementById("apt-info");
+      if (!searchObj) {
+        info.style.display = "none";
+        info.innerHTML = "";
+        return;
+      }
+
+      if (searchObj.type === "mm") {
+        const n = searchObj.n;
+        const key = keyMm(n);
+        const status = getStatusByKey(key);
+        const comment = getCommentByKey(key);
+
+        info.innerHTML = `
+          🅿️ <strong>Машиноместо ${n}</strong><br>
+          ${status === "voted" ? "🟢 <strong>проголосовали</strong>" : "⚪ <strong>не проголосовали</strong>"}
+          ${comment ? `<br><br>💬 ${comment}` : ""}
+        `;
+        info.style.display = "block";
+        return;
+      }
+
+      // квартира
+      const searchApt = searchObj.n;
+      let found = false;
+
+      for (let e = 0; e < entrances.length; e++) {
+        const entrance = entrances[e];
+        const start = entrance.start;
+        const end = entrance.start + entrance.count * floors;
+
+        if (searchApt >= start && searchApt < end) {
+          const localIndex = searchApt - start;
+          const floor = Math.floor(localIndex / entrance.count) + 2;
+
+          const key = keyApt(searchApt);
+          const status = getStatusByKey(key);
+          const comment = getCommentByKey(key);
+
+          info.innerHTML = `
+            🏠 <strong>Квартира ${searchApt}</strong><br>
+            🚪 Подъезд <strong>${e + 1}</strong><br>
+            ⬆ Этаж <strong>${floor}</strong><br>
+            ${status === "voted" ? "🟢 <strong>проголосовали</strong>" : "⚪ <strong>не проголосовали</strong>"}
+            ${comment ? `<br><br>💬 ${comment}` : ""}
+          `;
+          info.style.display = "block";
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        info.innerHTML = `⚠️ Объект не найден по структуре дома: <strong>кв. ${searchApt}</strong>`;
+        info.style.display = "block";
+      }
+    }
+
+    // =========================
+    // 11) ОСНОВНОЙ RENDER
+    // =========================
+    function render() {
+      hideTooltip();
+
+      const buildingDiv = document.getElementById("building");
+      buildingDiv.innerHTML = "";
+
+      const mode = document.getElementById("objectFilter").value; // all/apt/mm
+      const searchObj = parseSearch(document.getElementById("aptSearch").value);
+
+      updateStatistics(mode);
+      renderInfo(searchObj);
+
+      renderApartments(buildingDiv, searchObj, mode);
+      renderParking(buildingDiv, searchObj, mode);
     }
   </script>
 </body>
