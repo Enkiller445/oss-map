@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>ОСС — шахматка квартир и паркинга</title>
+  <title>Карта голосования (визуализация)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -15,47 +15,20 @@
     }
 
     header h1 {
-      font-size: 22px;
-      margin-bottom: 10px;
+      font-size: 20px;
+      margin-bottom: 14px;
       text-align: center;
     }
 
-    main {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    #loading {
-      font-weight: bold;
-      margin: 20px;
-      font-size: 16px;
-      color: #444;
-    }
-
-    .spinner {
-      display: inline-block;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .info-panel {
-      display: flex;
-      justify-content: center;
-      gap: 40px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    .status-column, .analytics-column {
+    .note {
+      max-width: 1100px;
+      margin: 0 auto 14px;
+      background: #ffffffaa;
+      border-radius: 10px;
+      padding: 10px 14px;
       font-size: 14px;
-      line-height: 1.6;
-      text-align: left;
-      min-width: 240px;
+      line-height: 1.4;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     }
 
     .filters {
@@ -64,7 +37,7 @@
       justify-content: center;
       align-items: center;
       gap: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       text-align: center;
     }
 
@@ -76,17 +49,17 @@
       .filters input, .filters select { width: 100%; max-width: 320px; }
     }
 
-    #apt-info {
+    #info {
       background: #ffffffaa;
       padding: 12px 16px;
-      margin: 10px 0 18px;
+      margin: 10px auto 14px;
       border-radius: 10px;
       font-size: 15px;
       color: #333;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
       text-align: center;
       line-height: 1.5;
-      max-width: 95vw;
+      max-width: 1100px;
       display: none;
     }
 
@@ -131,15 +104,8 @@
       font-weight: bold;
     }
 
-    .columns {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .row {
-      display: flex;
-      gap: 2px;
-    }
+    .columns { display: flex; flex-direction: column; }
+    .row { display: flex; gap: 2px; }
 
     .cell {
       width: 28px;
@@ -151,19 +117,19 @@
       font-size: 10px;
       box-shadow: 0 0 2px rgba(0,0,0,0.05);
       box-sizing: border-box;
-      position: relative;
       user-select: none;
       cursor: default;
     }
 
-    /* Статусы */
-    .cell.voted {
+    /* отмеченные */
+    .cell.marked {
       background-color: #00c853;
       color: #fff;
       font-weight: bold;
     }
 
-    .cell.notvoted {
+    /* неотмеченные */
+    .cell.empty {
       background-color: #fffdf5;
       border: 1px solid #ccc;
       color: #333;
@@ -177,6 +143,14 @@
       z-index: 10;
     }
 
+    .section-sep {
+      width: 100%;
+      max-width: 1100px;
+      height: 1px;
+      background: rgba(0,0,0,0.12);
+      margin: 18px 0;
+    }
+
     /* Tooltip-комментарий */
     .tooltip {
       position: fixed;
@@ -186,20 +160,11 @@
       padding: 8px 10px;
       border-radius: 8px;
       font-size: 12px;
-      max-width: 280px;
+      max-width: 300px;
       line-height: 1.3;
       z-index: 9999;
       display: none;
       white-space: pre-wrap;
-    }
-
-    /* Разделитель */
-    .section-sep {
-      width: 100%;
-      max-width: 1100px;
-      height: 1px;
-      background: rgba(0,0,0,0.12);
-      margin: 18px 0;
     }
 
     @media (max-width: 768px) {
@@ -211,59 +176,46 @@
 
 <body>
   <header>
-    <h1>Статус по ОСС: квартиры + паркинг</h1>
+    <h1>Карта голосования (без персональных данных)</h1>
   </header>
 
-  <main>
-    <div id="loading">Загрузка данных... <span class="spinner">⏳</span></div>
+  <div class="note">
+    Отмечены зелёным — объекты, которые указаны как «проголосовавшие» в списке.<br>
+    Здесь нет ФИО, телефонов и иных персональных данных — только номера объектов и комментарии к отдельным случаям.
+  </div>
 
-    <div class="info-panel">
-      <div class="status-column">
-        <div><strong>Проголосовали:</strong> <span id="count-voted">⏳</span> (<span id="percent-voted">⏳</span>%)</div>
-        <div><strong>Не проголосовали:</strong> <span id="count-notvoted">⏳</span> (<span id="percent-notvoted">⏳</span>%)</div>
-      </div>
+  <div class="filters">
+    <label for="entranceFilter">Подъезд:
+      <select id="entranceFilter" onchange="render()">
+        <option value="all">Все</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+    </label>
 
-      <div class="analytics-column">
-        <div><strong>Всего объектов:</strong> <span id="count-total">⏳</span></div>
-        <div style="opacity:.8; font-size:12px;">Объекты = квартиры + машиноместа (в выбранном фильтре)</div>
-      </div>
-    </div>
+    <label for="objectFilter">Показывать:
+      <select id="objectFilter" onchange="render()">
+        <option value="all">Квартиры + Паркинг</option>
+        <option value="apt">Только квартиры</option>
+        <option value="mm">Только паркинг</option>
+      </select>
+    </label>
 
-    <div class="filters">
-      <label for="entranceFilter">Подъезд:
-        <select id="entranceFilter" onchange="render()">
-          <option value="all">Все</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-        </select>
-      </label>
+    <label for="search">Поиск (кв/мм):
+      <input type="search" id="search" placeholder="Напр: 10 или мм162" oninput="render()" />
+    </label>
+  </div>
 
-      <label for="objectFilter">Показывать:
-        <select id="objectFilter" onchange="render()">
-          <option value="all">Квартиры + Паркинг</option>
-          <option value="apt">Только квартиры</option>
-          <option value="mm">Только паркинг</option>
-        </select>
-      </label>
-
-      <label for="aptSearch">Поиск (кв/мм):
-        <input type="search" id="aptSearch" placeholder="Напр: 10 или мм162" oninput="render()" />
-      </label>
-    </div>
-
-    <div id="apt-info"></div>
-
-    <div class="building" id="building"></div>
-  </main>
-
+  <div id="info"></div>
+  <div class="building" id="building"></div>
   <div id="tooltip" class="tooltip"></div>
 
   <script>
     // =========================
-    // 1) НАСТРОЙКИ ДОМА (КВАРТИРЫ)
+    // НАСТРОЙКИ КВАРТИР (как у тебя)
     // =========================
     const entrances = [
       { count: 5, start: 1 },
@@ -276,41 +228,37 @@
     const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
 
     // =========================
-    // 2) НАСТРОЙКИ ПАРКИНГА (ПРИМЕР)
-    //    Подгони под реальную нумерацию/форму:
-    //    - start: с какого номера начинается
-    //    - perRow: сколько мест в ряду
-    //    - rows: сколько рядов
+    // НАСТРОЙКИ ПАРКИНГА (пример)
+    // Подстрой под реальность
     // =========================
     const parkings = [
-      { name: "Паркинг", start: 1, perRow: 20, rows: 10 } // 200 мест: 1..200
-      // Можно добавить второй уровень:
-      // { name: "Паркинг (-2)", start: 201, perRow: 20, rows: 10 } // 201..400
+      { name: "Паркинг", start: 1, perRow: 20, rows: 10 } // 1..200
     ];
 
     // =========================
-    // 3) ДАННЫЕ
-    // dataMap: { "apt:10": {voted:true, comment:"..."}, "mm:162": {...} }
+    // ДАННЫЕ: data.json
+    // формат:
+    // {
+    //   "apt:10": { "mark": true, "comment": "..." },
+    //   "mm:162": { "mark": true, "comment": "..." }
+    // }
     // =========================
     let dataMap = {};
 
     function keyApt(n) { return `apt:${n}`; }
     function keyMm(n) { return `mm:${n}`; }
 
-    function getStatusByKey(key) {
-      const rec = dataMap[key];
-      return rec?.voted === true ? "voted" : "notvoted";
+    function isMarked(key) {
+      return dataMap[key]?.mark === true;
     }
-    function getCommentByKey(key) {
-      const rec = dataMap[key];
-      return rec?.comment ? String(rec.comment) : "";
+    function getComment(key) {
+      return dataMap[key]?.comment ? String(dataMap[key].comment) : "";
     }
 
     // =========================
-    // 4) TOOLTIP
+    // Tooltip
     // =========================
     const tooltip = document.getElementById("tooltip");
-
     function showTooltip(text, x, y) {
       tooltip.textContent = text;
       tooltip.style.display = "block";
@@ -323,7 +271,7 @@
     }
 
     // =========================
-    // 5) ПОИСК: "10", "кв 10", "мм162", "м/м 162", "м.м.162"
+    // Поиск: "10", "кв 10", "мм162", "м/м 162", "м.м.162"
     // =========================
     function parseSearch(input) {
       const s = String(input || "").trim().toLowerCase();
@@ -342,70 +290,76 @@
     }
 
     // =========================
-    // 6) ЗАГРУЗКА data.json
+    // data.json грузим, но если его нет — просто показываем пустую карту
     // =========================
     fetch("./data.json", { cache: "no-store" })
-      .then(r => {
-        if (!r.ok) throw new Error("Не удалось загрузить data.json");
-        return r.json();
-      })
-      .then(json => {
-        dataMap = json || {};
-        document.getElementById("loading").style.display = "none";
-        render();
-      })
-      .catch(err => {
-        document.getElementById("loading").textContent = "Ошибка загрузки данных: " + err.message;
-      });
+      .then(r => (r.ok ? r.json() : {}))
+      .then(json => { dataMap = json || {}; render(); })
+      .catch(() => { dataMap = {}; render(); });
 
     // =========================
-    // 7) СТАТИСТИКА
+    // РЕНДЕР ИНФО ПО ПОИСКУ
     // =========================
-    function updateStatistics(mode) {
-      const selectedEntrance = document.getElementById("entranceFilter").value;
-
-      let voted = 0, notvoted = 0, total = 0;
-
-      // Квартиры
-      if (mode === "all" || mode === "apt") {
-        entrances.forEach((entrance, index) => {
-          const entranceNumber = index + 1;
-          if (selectedEntrance !== "all" && parseInt(selectedEntrance, 10) !== entranceNumber) return;
-
-          for (let floor = 0; floor < floors; floor++) {
-            for (let i = 0; i < entrance.count; i++) {
-              const aptNumber = entrance.start + floor * entrance.count + i;
-              const status = getStatusByKey(keyApt(aptNumber));
-              if (status === "voted") voted++; else notvoted++;
-              total++;
-            }
-          }
-        });
+    function renderInfo(searchObj) {
+      const info = document.getElementById("info");
+      if (!searchObj) {
+        info.style.display = "none";
+        info.innerHTML = "";
+        return;
       }
 
-      // Паркинг
-      if (mode === "all" || mode === "mm") {
-        parkings.forEach(p => {
-          const totalMm = p.perRow * p.rows;
-          for (let i = 0; i < totalMm; i++) {
-            const mmNumber = p.start + i;
-            const status = getStatusByKey(keyMm(mmNumber));
-            if (status === "voted") voted++; else notvoted++;
-            total++;
-          }
-        });
+      if (searchObj.type === "mm") {
+        const key = keyMm(searchObj.n);
+        const marked = isMarked(key);
+        const comment = getComment(key);
+
+        info.innerHTML = `
+          🅿️ <strong>Машиноместо ${searchObj.n}</strong><br>
+          ${marked ? "🟢 <strong>отмечено в списке</strong>" : "⚪ <strong>не отмечено</strong>"}
+          ${comment ? `<br><br>💬 ${comment}` : ""}
+        `;
+        info.style.display = "block";
+        return;
       }
 
-      document.getElementById("count-voted").textContent = voted;
-      document.getElementById("count-notvoted").textContent = notvoted;
-      document.getElementById("count-total").textContent = total;
+      // квартира
+      const aptN = searchObj.n;
+      let found = false;
 
-      document.getElementById("percent-voted").textContent = total ? ((voted / total) * 100).toFixed(1) : "0";
-      document.getElementById("percent-notvoted").textContent = total ? ((notvoted / total) * 100).toFixed(1) : "0";
+      for (let e = 0; e < entrances.length; e++) {
+        const entrance = entrances[e];
+        const start = entrance.start;
+        const end = entrance.start + entrance.count * floors;
+
+        if (aptN >= start && aptN < end) {
+          const localIndex = aptN - start;
+          const floor = Math.floor(localIndex / entrance.count) + 2;
+
+          const key = keyApt(aptN);
+          const marked = isMarked(key);
+          const comment = getComment(key);
+
+          info.innerHTML = `
+            🏠 <strong>Квартира ${aptN}</strong><br>
+            🚪 Подъезд <strong>${e + 1}</strong><br>
+            ⬆ Этаж <strong>${floor}</strong><br>
+            ${marked ? "🟢 <strong>отмечено в списке</strong>" : "⚪ <strong>не отмечено</strong>"}
+            ${comment ? `<br><br>💬 ${comment}` : ""}
+          `;
+          info.style.display = "block";
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        info.innerHTML = `⚠️ Объект не найден по структуре дома: <strong>кв. ${aptN}</strong>`;
+        info.style.display = "block";
+      }
     }
 
     // =========================
-    // 8) РЕНДЕР КВАРТИР
+    // РЕНДЕР КВАРТИР
     // =========================
     function renderApartments(buildingDiv, searchObj, mode) {
       if (!(mode === "all" || mode === "apt")) return;
@@ -446,15 +400,16 @@
             cell.className = "cell";
             cell.textContent = aptNumber;
 
-            const status = getStatusByKey(key);
-            cell.classList.add(status);
+            if (isMarked(key)) cell.classList.add("marked");
+            else cell.classList.add("empty");
 
             if (aptNumber === searchApt) cell.classList.add("highlight");
 
-            const comment = getCommentByKey(key);
+            const comment = getComment(key);
             if (comment) {
               cell.addEventListener("mousemove", (e) => showTooltip(comment, e.clientX, e.clientY));
               cell.addEventListener("mouseleave", hideTooltip);
+              // мобила: тап показать/скрыть
               cell.addEventListener("click", (e) => {
                 if (tooltip.style.display === "block") hideTooltip();
                 else showTooltip(comment, e.clientX, e.clientY);
@@ -482,12 +437,11 @@
     }
 
     // =========================
-    // 9) РЕНДЕР ПАРКИНГА
+    // РЕНДЕР ПАРКИНГА
     // =========================
     function renderParking(buildingDiv, searchObj, mode) {
       if (!(mode === "all" || mode === "mm")) return;
 
-      // Разделитель (если одновременно квартиры и паркинг)
       if (mode === "all") {
         const sep = document.createElement("div");
         sep.className = "section-sep";
@@ -519,12 +473,12 @@
             cell.className = "cell";
             cell.textContent = mmNumber;
 
-            const status = getStatusByKey(key);
-            cell.classList.add(status);
+            if (isMarked(key)) cell.classList.add("marked");
+            else cell.classList.add("empty");
 
             if (mmNumber === searchMm) cell.classList.add("highlight");
 
-            const comment = getCommentByKey(key);
+            const comment = getComment(key);
             if (comment) {
               cell.addEventListener("mousemove", (e) => showTooltip(comment, e.clientX, e.clientY));
               cell.addEventListener("mouseleave", hideTooltip);
@@ -549,69 +503,7 @@
     }
 
     // =========================
-    // 10) КАРТОЧКА ПОИСКА (квартира/мм)
-    // =========================
-    function renderInfo(searchObj) {
-      const info = document.getElementById("apt-info");
-      if (!searchObj) {
-        info.style.display = "none";
-        info.innerHTML = "";
-        return;
-      }
-
-      if (searchObj.type === "mm") {
-        const n = searchObj.n;
-        const key = keyMm(n);
-        const status = getStatusByKey(key);
-        const comment = getCommentByKey(key);
-
-        info.innerHTML = `
-          🅿️ <strong>Машиноместо ${n}</strong><br>
-          ${status === "voted" ? "🟢 <strong>проголосовали</strong>" : "⚪ <strong>не проголосовали</strong>"}
-          ${comment ? `<br><br>💬 ${comment}` : ""}
-        `;
-        info.style.display = "block";
-        return;
-      }
-
-      // квартира
-      const searchApt = searchObj.n;
-      let found = false;
-
-      for (let e = 0; e < entrances.length; e++) {
-        const entrance = entrances[e];
-        const start = entrance.start;
-        const end = entrance.start + entrance.count * floors;
-
-        if (searchApt >= start && searchApt < end) {
-          const localIndex = searchApt - start;
-          const floor = Math.floor(localIndex / entrance.count) + 2;
-
-          const key = keyApt(searchApt);
-          const status = getStatusByKey(key);
-          const comment = getCommentByKey(key);
-
-          info.innerHTML = `
-            🏠 <strong>Квартира ${searchApt}</strong><br>
-            🚪 Подъезд <strong>${e + 1}</strong><br>
-            ⬆ Этаж <strong>${floor}</strong><br>
-            ${status === "voted" ? "🟢 <strong>проголосовали</strong>" : "⚪ <strong>не проголосовали</strong>"}
-            ${comment ? `<br><br>💬 ${comment}` : ""}
-          `;
-          info.style.display = "block";
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        info.innerHTML = `⚠️ Объект не найден по структуре дома: <strong>кв. ${searchApt}</strong>`;
-        info.style.display = "block";
-      }
-    }
-
-    // =========================
-    // 11) ОСНОВНОЙ RENDER
+    // ОСНОВНОЙ RENDER
     // =========================
     function render() {
       hideTooltip();
@@ -620,11 +512,9 @@
       buildingDiv.innerHTML = "";
 
       const mode = document.getElementById("objectFilter").value; // all/apt/mm
-      const searchObj = parseSearch(document.getElementById("aptSearch").value);
+      const searchObj = parseSearch(document.getElementById("search").value);
 
-      updateStatistics(mode);
       renderInfo(searchObj);
-
       renderApartments(buildingDiv, searchObj, mode);
       renderParking(buildingDiv, searchObj, mode);
     }
