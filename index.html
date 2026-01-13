@@ -2,9 +2,9 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Участие квартир в ОСС</title>
+  <title>ОСС — шахматка голосования</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -12,164 +12,173 @@
       background-color: #d1eaf5;
       color: #2d2d2d;
       padding: 20px;
+    }
+
+    header h1 {
+      font-size: 22px;
+      margin-bottom: 10px;
       text-align: center;
     }
 
-    h1 {
-      font-size: 22px;
-      margin-bottom: 10px;
-    }
+    main { display: flex; flex-direction: column; align-items: center; }
 
-    .legend {
-      margin-bottom: 20px;
-      font-size: 14px;
+    .info-panel {
       display: flex;
-      align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 40px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
     }
 
-    .legend span.square {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      background-color: #00c853;
-      border-radius: 3px;
-      vertical-align: middle;
-    }
-
-    #participated-count {
-      font-weight: bold;
-      margin: 0 4px;
-      color: #000;
+    .status-column, .analytics-column {
+      font-size: 14px;
+      line-height: 1.6;
+      text-align: left;
+      min-width: 240px;
     }
 
     .filters {
-      margin-bottom: 20px;
-    }
-
-    .filters label {
-      font-size: 14px;
-    }
-
-    .filters select {
-      padding: 6px 10px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: 1px solid #aaa;
-      margin-left: 6px;
-    }
-
-    .building {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 40px;
-    }
-
-    .entrance-block {
-      display: flex;
-      flex-direction: column;
       align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      text-align: center;
     }
 
-    .entrance-title {
-      font-weight: bold;
-      margin-bottom: 5px;
-      font-size: 14px;
+    .filters label { font-size: 14px; }
+
+    @media (max-width: 480px) {
+      .filters { flex-direction: column; align-items: stretch; }
+      .filters label { width: 100%; }
+      .filters input, .filters select { width: 100%; max-width: 320px; }
     }
 
-    .entrance {
-      display: flex;
-    }
+    .building { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; }
 
-    .floor-labels {
-      display: flex;
-      flex-direction: column;
-      margin-right: 5px;
-    }
+    .entrance-block { display: flex; flex-direction: column; align-items: center; }
 
+    .entrance-title { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+
+    .entrance { display: flex; }
+
+    .floor-labels { display: flex; flex-direction: column; margin-right: 5px; }
     .floor-labels div {
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      font-size: 11px;
-      color: #555;
-      width: 22px;
+      height: 28px; display: flex; align-items: center; justify-content: flex-end;
+      font-size: 11px; color: #555; width: 22px; font-weight: bold;
     }
 
-    .columns {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .row {
-      display: flex;
-      gap: 2px;
-    }
+    .columns { display: flex; flex-direction: column; }
+    .row { display: flex; gap: 2px; }
 
     .cell {
-      width: 28px;
-      height: 28px;
-      background-color: #f2f2f2;
+      width: 28px; height: 28px;
       border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       font-size: 10px;
-      box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 0 2px rgba(0,0,0,0.05);
       box-sizing: border-box;
+      position: relative;
+      user-select: none;
+      cursor: default;
     }
 
-    .cell.green {
-      background-color: #00c853;
-      color: white;
+    /* Статусы */
+    .cell.voted { background-color: #00c853; color: #fff; font-weight: bold; }
+    .cell.notvoted { background-color: #fffdf5; border: 1px solid #ccc; color: #333; }
+
+    .cell.highlight {
+      outline: 2px solid #ffeb3b !important;
+      background-color: #fff59d !important;
+      color: #000 !important;
       font-weight: bold;
+      z-index: 10;
+    }
+
+    #apt-info {
+      background: #ffffffaa;
+      padding: 12px 16px;
+      margin: 10px 0 18px;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #333;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      text-align: center;
+      line-height: 1.5;
+      max-width: 95vw;
+      display: none;
+    }
+
+    #loading { font-weight: bold; margin: 20px; font-size: 16px; color: #444; }
+    .spinner { display: inline-block; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% {transform:rotate(0)} 100% {transform:rotate(360deg)} }
+
+    /* Tooltip-комментарий */
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: rgba(0,0,0,0.82);
+      color: white;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      max-width: 280px;
+      line-height: 1.3;
+      z-index: 9999;
+      display: none;
+      white-space: pre-wrap;
     }
 
     @media (max-width: 768px) {
-      .building {
-        gap: 20px;
-      }
-      .cell {
-        width: 24px;
-        height: 24px;
-        font-size: 9px;
-      }
-      .floor-labels div {
-        height: 24px;
-        font-size: 9px;
-      }
+      .cell { width: 24px; height: 24px; font-size: 9px; }
+      .floor-labels div { height: 24px; font-size: 9px; }
     }
   </style>
 </head>
-<body>
-  <h1>Участие квартир в ОСС</h1>
-  <div class="legend">
-    <span class="square"></span>
-    Приняли участие в ОСС:
-    <span id="participated-count">0</span>
-    квартир
-  </div>
-  <div class="filters">
-    <label for="entranceFilter">Фильтр по подъезду:
-      <select id="entranceFilter" onchange="render()">
-        <option value="all">Все</option>
-        <option value="1">Подъезд 1</option>
-        <option value="2">Подъезд 2</option>
-        <option value="3">Подъезд 3</option>
-        <option value="4">Подъезд 4</option>
-        <option value="5">Подъезд 5</option>
-      </select>
-    </label>
-  </div>
 
-  <div class="building" id="building"></div>
+<body>
+  <header><h1>Статус квартир по участию в ОСС</h1></header>
+
+  <main>
+    <div id="loading">Загрузка данных... <span class="spinner">⏳</span></div>
+
+    <div class="info-panel">
+      <div class="status-column">
+        <div><strong>Проголосовали:</strong> <span id="count-voted">⏳</span> (<span id="percent-voted">⏳</span>%)</div>
+        <div><strong>Не проголосовали:</strong> <span id="count-notvoted">⏳</span> (<span id="percent-notvoted">⏳</span>%)</div>
+      </div>
+
+      <div class="analytics-column">
+        <div><strong>Всего квартир:</strong> <span id="count-total">⏳</span></div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <label for="entranceFilter">Подъезд:
+        <select id="entranceFilter" onchange="render()">
+          <option value="all">Все</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+        </select>
+      </label>
+
+      <label for="aptSearch">Квартира:
+        <input type="search" id="aptSearch" placeholder="Номер" oninput="render()" />
+      </label>
+    </div>
+
+    <div id="apt-info"></div>
+    <div class="building" id="building"></div>
+  </main>
+
+  <div id="tooltip" class="tooltip"></div>
 
   <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRRbhD4HVJzaB0vZwakUhpv0rHu3LvS0Gxq3zl4Qo9dANsvW8LosfiylBqljl2dVV1vmMNpOpP0516/pub?gid=63142697&single=true&output=csv';
-
+    // ====== НАСТРОЙКИ ДОМА (оставил как у тебя) ======
     const entrances = [
       { count: 5, start: 1 },
       { count: 5, start: 106 },
@@ -177,39 +186,92 @@
       { count: 10, start: 337 },
       { count: 9, start: 547 }
     ];
-
     const floors = 21;
     const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
-    let greenSet = new Set();
 
-    Papa.parse(csvUrl, {
-      download: true,
-      header: true,
-      complete: function(results) {
-        const data = results.data;
-        greenSet = new Set();
+    // ====== ДАННЫЕ ======
+    // dataMap: { "10": { voted: true/false, comment: "..." }, ... }
+    let dataMap = {};
 
-        data.forEach(row => {
-          const color = row["Цвет"]?.trim().toLowerCase();
-          const apt = parseInt(row["Квартира"]);
-          if (apt && color === "#00ff00") {
-            greenSet.add(apt);
-          }
-        });
-
-        document.getElementById("participated-count").textContent = greenSet.size;
+    // Грузим JSON из репозитория
+    fetch('./data.json', { cache: "no-store" })
+      .then(r => {
+        if (!r.ok) throw new Error("Не удалось загрузить data.json");
+        return r.json();
+      })
+      .then(json => {
+        dataMap = json || {};
+        document.getElementById("loading").style.display = "none";
         render();
-      }
-    });
+      })
+      .catch(err => {
+        document.getElementById("loading").textContent = "Ошибка загрузки данных: " + err.message;
+      });
 
-    function render() {
-      const selected = document.getElementById("entranceFilter").value;
-      const buildingDiv = document.getElementById("building");
-      buildingDiv.innerHTML = '';
+    function getAptStatus(aptNumber) {
+      const rec = dataMap[String(aptNumber)];
+      if (rec && rec.voted === true) return "voted";
+      return "notvoted";
+    }
+
+    function getAptComment(aptNumber) {
+      const rec = dataMap[String(aptNumber)];
+      return rec?.comment ? String(rec.comment) : "";
+    }
+
+    function updateStatistics() {
+      const selectedEntrance = document.getElementById("entranceFilter").value;
+
+      let voted = 0, notvoted = 0, total = 0;
 
       entrances.forEach((entrance, index) => {
         const entranceNumber = index + 1;
-        if (selected !== 'all' && parseInt(selected) !== entranceNumber) return;
+        if (selectedEntrance !== 'all' && parseInt(selectedEntrance) !== entranceNumber) return;
+
+        for (let floor = 0; floor < floors; floor++) {
+          for (let i = 0; i < entrance.count; i++) {
+            const aptNumber = entrance.start + floor * entrance.count + i;
+            const status = getAptStatus(aptNumber);
+            if (status === "voted") voted++; else notvoted++;
+            total++;
+          }
+        }
+      });
+
+      document.getElementById("count-voted").textContent = voted;
+      document.getElementById("count-notvoted").textContent = notvoted;
+      document.getElementById("count-total").textContent = total;
+
+      document.getElementById("percent-voted").textContent = total ? ((voted / total) * 100).toFixed(1) : "0";
+      document.getElementById("percent-notvoted").textContent = total ? ((notvoted / total) * 100).toFixed(1) : "0";
+    }
+
+    const tooltip = document.getElementById("tooltip");
+
+    function showTooltip(text, x, y) {
+      tooltip.textContent = text;
+      tooltip.style.display = "block";
+      tooltip.style.left = (x + 12) + "px";
+      tooltip.style.top = (y + 12) + "px";
+    }
+
+    function hideTooltip() {
+      tooltip.style.display = "none";
+      tooltip.textContent = "";
+    }
+
+    function render() {
+      updateStatistics();
+
+      const buildingDiv = document.getElementById("building");
+      buildingDiv.innerHTML = '';
+
+      const selectedEntrance = document.getElementById("entranceFilter").value;
+      const searchApt = parseInt(document.getElementById("aptSearch").value);
+
+      entrances.forEach((entrance, index) => {
+        const entranceNumber = index + 1;
+        if (selectedEntrance !== 'all' && parseInt(selectedEntrance) !== entranceNumber) return;
 
         const wrapper = document.createElement("div");
         wrapper.className = "entrance-block";
@@ -232,16 +294,33 @@
           const row = document.createElement("div");
           row.className = "row";
 
-          for (let apt = 0; apt < entrance.count; apt++) {
-            const aptNumber = entrance.start + floor * entrance.count + apt;
+          for (let j = 0; j < entrance.count; j++) {
+            const aptNumber = entrance.start + floor * entrance.count + j;
+
             const cell = document.createElement("div");
             cell.className = "cell";
 
-            if (greenSet.has(aptNumber)) {
-              cell.classList.add("green");
+            const status = getAptStatus(aptNumber);
+            cell.classList.add(status);
+
+            if (aptNumber === searchApt) cell.classList.add("highlight");
+            cell.textContent = aptNumber;
+
+            // hover/tap комментарий
+            const comment = getAptComment(aptNumber);
+            if (comment) {
+              cell.addEventListener("mousemove", (e) => showTooltip(comment, e.clientX, e.clientY));
+              cell.addEventListener("mouseleave", hideTooltip);
+
+              // на мобиле: тап показать/скрыть
+              cell.addEventListener("click", (e) => {
+                if (tooltip.style.display === "block") hideTooltip();
+                else showTooltip(comment, e.clientX, e.clientY);
+              });
+            } else {
+              cell.addEventListener("mouseleave", hideTooltip);
             }
 
-            cell.textContent = aptNumber;
             row.appendChild(cell);
           }
 
@@ -253,10 +332,49 @@
 
         floorGroup.appendChild(floorLabels);
         floorGroup.appendChild(grid);
+
         wrapper.appendChild(title);
         wrapper.appendChild(floorGroup);
         buildingDiv.appendChild(wrapper);
       });
+
+      // Карточка по введённой квартире
+      const aptInfo = document.getElementById("apt-info");
+      if (!isNaN(searchApt)) {
+        let found = false;
+
+        for (let e = 0; e < entrances.length; e++) {
+          const entrance = entrances[e];
+          const start = entrance.start;
+          const end = entrance.start + entrance.count * floors;
+
+          if (searchApt >= start && searchApt < end) {
+            const localIndex = searchApt - start;
+            const floor = Math.floor(localIndex / entrance.count) + 2;
+            const status = getAptStatus(searchApt);
+            const comment = getAptComment(searchApt);
+
+            aptInfo.innerHTML = `
+              🏠 <strong>Квартира ${searchApt}</strong><br>
+              🚪 Подъезд <strong>${e + 1}</strong><br>
+              ⬆ Этаж <strong>${floor}</strong><br>
+              ${status === "voted" ? "🟢 <strong>проголосовали</strong>" : "⚪ <strong>не проголосовали</strong>"}
+              ${comment ? `<br><br>💬 ${comment}` : ""}
+            `;
+            aptInfo.style.display = "block";
+            found = true;
+            break;
+          }
+        }
+
+        if (!found) {
+          aptInfo.textContent = `Квартира ${searchApt} не найдена в структуре подъездов`;
+          aptInfo.style.display = "block";
+        }
+      } else {
+        aptInfo.innerHTML = '';
+        aptInfo.style.display = "none";
+      }
     }
   </script>
 </body>
