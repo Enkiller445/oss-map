@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Карта голосования (визуализация)</title>
+  <title>Карта голосования (без персональных данных)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -119,6 +119,7 @@
       box-sizing: border-box;
       user-select: none;
       cursor: default;
+      white-space: nowrap;
     }
 
     /* отмеченные */
@@ -151,7 +152,6 @@
       margin: 18px 0;
     }
 
-    /* Tooltip-комментарий */
     .tooltip {
       position: fixed;
       pointer-events: none;
@@ -160,7 +160,7 @@
       padding: 8px 10px;
       border-radius: 8px;
       font-size: 12px;
-      max-width: 300px;
+      max-width: 320px;
       line-height: 1.3;
       z-index: 9999;
       display: none;
@@ -182,6 +182,9 @@
   <div class="note">
     Отмечены зелёным — объекты, которые указаны как «проголосовавшие» в списке.<br>
     Здесь нет ФИО, телефонов и иных персональных данных — только номера объектов и комментарии к отдельным случаям.
+    <div style="margin-top:6px; opacity:.85; font-size:12px;">
+      Паркинг: «мм …» = -1 этаж, «мм2_…» = -2 этаж. На -2 некоторые места показаны парами (например 3/4).
+    </div>
   </div>
 
   <div class="filters">
@@ -198,14 +201,15 @@
 
     <label for="objectFilter">Показывать:
       <select id="objectFilter" onchange="render()">
-        <option value="all">Квартиры + Паркинг</option>
+        <option value="all">Квартиры + Паркинг (-1 и -2)</option>
         <option value="apt">Только квартиры</option>
-        <option value="mm">Только паркинг</option>
+        <option value="mm1">Только паркинг -1</option>
+        <option value="mm2">Только паркинг -2</option>
       </select>
     </label>
 
     <label for="search">Поиск (кв/мм):
-      <input type="search" id="search" placeholder="Напр: 10 или мм162" oninput="render()" />
+      <input type="search" id="search" placeholder="Напр: 10 / мм 82 / мм2_141" oninput="render()" />
     </label>
   </div>
 
@@ -228,25 +232,19 @@
     const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
 
     // =========================
-    // НАСТРОЙКИ ПАРКИНГА (пример)
-    // Подстрой под реальность
-    // =========================
-    const parkings = [
-      { name: "Паркинг", start: 1, perRow: 20, rows: 10 } // 1..200
-    ];
-
-    // =========================
     // ДАННЫЕ: data.json
     // формат:
     // {
     //   "apt:10": { "mark": true, "comment": "..." },
-    //   "mm:162": { "mark": true, "comment": "..." }
+    //   "mm1:82": { "mark": true, "comment": "..." },
+    //   "mm2:141": { "mark": true, "comment": "..." }
     // }
     // =========================
     let dataMap = {};
 
     function keyApt(n) { return `apt:${n}`; }
-    function keyMm(n) { return `mm:${n}`; }
+    function keyMm1(n) { return `mm1:${n}`; }
+    function keyMm2(n) { return `mm2:${n}`; }
 
     function isMarked(key) {
       return dataMap[key]?.mark === true;
@@ -271,14 +269,17 @@
     }
 
     // =========================
-    // Поиск: "10", "кв 10", "мм162", "м/м 162", "м.м.162"
+    // Поиск: "10", "кв 10", "мм 82" (=-1), "мм2_141" (=-2)
     // =========================
     function parseSearch(input) {
       const s = String(input || "").trim().toLowerCase();
       if (!s) return null;
 
-      const mm = s.match(/(мм|м\/м|м\.м)\s*\.?\s*(\d+)/);
-      if (mm) return { type: "mm", n: parseInt(mm[2], 10) };
+      const mm2 = s.match(/(мм2[_\s]*|м\.м2|м\/м2)\s*\.?\s*(\d+)/);
+      if (mm2) return { type: "mm2", n: parseInt(mm2[2], 10) };
+
+      const mm1 = s.match(/(мм|м\/м|м\.м)\s*\.?\s*(\d+)/);
+      if (mm1) return { type: "mm1", n: parseInt(mm1[2], 10) };
 
       const apt = s.match(/(кв)\s*\.?\s*(\d+)/);
       if (apt) return { type: "apt", n: parseInt(apt[2], 10) };
@@ -290,7 +291,7 @@
     }
 
     // =========================
-    // data.json грузим, но если его нет — просто показываем пустую карту
+    // Грузим data.json (если нет — просто покажем пустую карту)
     // =========================
     fetch("./data.json", { cache: "no-store" })
       .then(r => (r.ok ? r.json() : {}))
@@ -298,7 +299,43 @@
       .catch(() => { dataMap = {}; render(); });
 
     // =========================
-    // РЕНДЕР ИНФО ПО ПОИСКУ
+    // Генерация клеток паркинга -2 (одинарные + двойные по твоей схеме)
+    // Каждая клетка: { label: "141/142", nums: [141,142] } или { label:"170", nums:[170] }
+    // =========================
+    function buildMm2Cells() {
+      const cells = [];
+
+      const addSingle = (n) => cells.push({ label: String(n), nums: [n] });
+      const addSingles = (a, b) => { for (let n = a; n <= b; n++) addSingle(n); };
+
+      const addPair = (a, b) => cells.push({ label: `${a}/${b}`, nums: [a, b] });
+      const addPairs = (a, b) => { for (let n = a; n <= b; n += 2) addPair(n, n + 1); };
+
+      // ТВОЯ СХЕМА:
+      addSingles(1, 2);       // 1,2 одинарные
+      addPairs(3, 152);       // 3/4 ... 151/152 двойные
+      addSingles(153, 161);   // 153...161 одинарные
+      addPairs(162, 169);     // 162/163...168/169 двойные
+      addSingles(170, 192);   // 170...192 одинарные
+
+      // ты написал "192/194...201/202" — трактуем как 193/194...201/202
+      addPairs(193, 202);     // 193/194...201/202 двойные
+
+      addSingles(203, 231);   // 203...231 одинарные
+      addPairs(232, 243);     // 232/233...242/243 двойные
+      addSingles(244, 252);   // 244...252 одинарные
+      addPairs(253, 256);     // 253/254...255/256 двойные
+      addSingles(257, 263);   // 257...263 одинарные
+      addPairs(264, 299);     // 264/265...298/299 двойные
+      addSingles(300, 304);   // 300...304 одинарные
+      addPairs(305, 362);     // 305/306...361/362 двойные
+      addSingles(363, 373);   // 363...373 одинарные
+
+      return cells;
+    }
+
+    // =========================
+    // Карточка по поиску
     // =========================
     function renderInfo(searchObj) {
       const info = document.getElementById("info");
@@ -308,13 +345,27 @@
         return;
       }
 
-      if (searchObj.type === "mm") {
-        const key = keyMm(searchObj.n);
+      if (searchObj.type === "mm1") {
+        const key = keyMm1(searchObj.n);
         const marked = isMarked(key);
         const comment = getComment(key);
 
         info.innerHTML = `
-          🅿️ <strong>Машиноместо ${searchObj.n}</strong><br>
+          🅿️ <strong>Машиноместо ${searchObj.n}</strong> (паркинг -1)<br>
+          ${marked ? "🟢 <strong>отмечено в списке</strong>" : "⚪ <strong>не отмечено</strong>"}
+          ${comment ? `<br><br>💬 ${comment}` : ""}
+        `;
+        info.style.display = "block";
+        return;
+      }
+
+      if (searchObj.type === "mm2") {
+        const key = keyMm2(searchObj.n);
+        const marked = isMarked(key);
+        const comment = getComment(key);
+
+        info.innerHTML = `
+          🅿️ <strong>Машиноместо ${searchObj.n}</strong> (паркинг -2)<br>
           ${marked ? "🟢 <strong>отмечено в списке</strong>" : "⚪ <strong>не отмечено</strong>"}
           ${comment ? `<br><br>💬 ${comment}` : ""}
         `;
@@ -359,7 +410,7 @@
     }
 
     // =========================
-    // РЕНДЕР КВАРТИР
+    // Рендер квартир
     // =========================
     function renderApartments(buildingDiv, searchObj, mode) {
       if (!(mode === "all" || mode === "apt")) return;
@@ -409,7 +460,6 @@
             if (comment) {
               cell.addEventListener("mousemove", (e) => showTooltip(comment, e.clientX, e.clientY));
               cell.addEventListener("mouseleave", hideTooltip);
-              // мобила: тап показать/скрыть
               cell.addEventListener("click", (e) => {
                 if (tooltip.style.display === "block") hideTooltip();
                 else showTooltip(comment, e.clientX, e.clientY);
@@ -437,10 +487,13 @@
     }
 
     // =========================
-    // РЕНДЕР ПАРКИНГА
+    // Рендер паркинга -1 (1..207) и -2 (по схеме)
     // =========================
     function renderParking(buildingDiv, searchObj, mode) {
-      if (!(mode === "all" || mode === "mm")) return;
+      if (!(mode === "all" || mode === "mm1" || mode === "mm2")) return;
+
+      const wantMm1 = (mode === "all" || mode === "mm1");
+      const wantMm2 = (mode === "all" || mode === "mm2");
 
       if (mode === "all") {
         const sep = document.createElement("div");
@@ -448,26 +501,29 @@
         buildingDiv.appendChild(sep);
       }
 
-      const searchMm = (searchObj?.type === "mm") ? searchObj.n : NaN;
-
-      parkings.forEach(p => {
+      // ---- -1: 207 мест, одинарные (23x9) ----
+      if (wantMm1) {
         const wrapper = document.createElement("div");
         wrapper.className = "entrance-block";
 
         const title = document.createElement("div");
         title.className = "entrance-title";
-        title.textContent = p.name;
+        title.textContent = "Паркинг -1 (1–207)";
 
         const grid = document.createElement("div");
         grid.className = "columns";
 
-        for (let r = 0; r < p.rows; r++) {
+        const perRow = 23;
+        const rows = 9;
+        const searchMm1 = (searchObj?.type === "mm1") ? searchObj.n : NaN;
+
+        for (let r = 0; r < rows; r++) {
           const row = document.createElement("div");
           row.className = "row";
 
-          for (let c = 0; c < p.perRow; c++) {
-            const mmNumber = p.start + r * p.perRow + c;
-            const key = keyMm(mmNumber);
+          for (let c = 0; c < perRow; c++) {
+            const mmNumber = 1 + r * perRow + c; // 1..207
+            const key = keyMm1(mmNumber);
 
             const cell = document.createElement("div");
             cell.className = "cell";
@@ -476,7 +532,7 @@
             if (isMarked(key)) cell.classList.add("marked");
             else cell.classList.add("empty");
 
-            if (mmNumber === searchMm) cell.classList.add("highlight");
+            if (mmNumber === searchMm1) cell.classList.add("highlight");
 
             const comment = getComment(key);
             if (comment) {
@@ -499,7 +555,68 @@
         wrapper.appendChild(title);
         wrapper.appendChild(grid);
         buildingDiv.appendChild(wrapper);
-      });
+      }
+
+      // ---- -2: по схеме, “двойные” как 3/4 и т.д. ----
+      if (wantMm2) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "entrance-block";
+
+        const title = document.createElement("div");
+        title.className = "entrance-title";
+        title.textContent = "Паркинг -2 (часть мест показана парами)";
+
+        const grid = document.createElement("div");
+        grid.className = "columns";
+
+        const cells = buildMm2Cells();
+        const perRow = 20;
+
+        const searchMm2 = (searchObj?.type === "mm2") ? searchObj.n : NaN;
+
+        for (let i = 0; i < cells.length; i += perRow) {
+          const row = document.createElement("div");
+          row.className = "row";
+
+          for (const item of cells.slice(i, i + perRow)) {
+            const keys = item.nums.map(n => keyMm2(n));
+
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.textContent = item.label;
+
+            const marked = keys.some(k => isMarked(k));
+            if (marked) cell.classList.add("marked");
+            else cell.classList.add("empty");
+
+            if (!isNaN(searchMm2) && item.nums.includes(searchMm2)) {
+              cell.classList.add("highlight");
+            }
+
+            const comments = keys.map(k => getComment(k)).filter(Boolean);
+            const comment = comments.length ? comments.join("\n") : "";
+
+            if (comment) {
+              cell.addEventListener("mousemove", (e) => showTooltip(comment, e.clientX, e.clientY));
+              cell.addEventListener("mouseleave", hideTooltip);
+              cell.addEventListener("click", (e) => {
+                if (tooltip.style.display === "block") hideTooltip();
+                else showTooltip(comment, e.clientX, e.clientY);
+              });
+            } else {
+              cell.addEventListener("mouseleave", hideTooltip);
+            }
+
+            row.appendChild(cell);
+          }
+
+          grid.appendChild(row);
+        }
+
+        wrapper.appendChild(title);
+        wrapper.appendChild(grid);
+        buildingDiv.appendChild(wrapper);
+      }
     }
 
     // =========================
@@ -511,7 +628,7 @@
       const buildingDiv = document.getElementById("building");
       buildingDiv.innerHTML = "";
 
-      const mode = document.getElementById("objectFilter").value; // all/apt/mm
+      const mode = document.getElementById("objectFilter").value; // all/apt/mm1/mm2
       const searchObj = parseSearch(document.getElementById("search").value);
 
       renderInfo(searchObj);
