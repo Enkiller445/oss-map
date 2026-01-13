@@ -152,23 +152,24 @@
       margin: 18px 0;
     }
 
-    /* ====== Паркинг: увеличенные клетки, чтобы читались пары 151/152 ====== */
-    .parking .cell {
-      width: 36px;
-      height: 36px;
-      font-size: 12px;
-      border-radius: 8px;
-    }
+    /* ====== Паркинг: крупнее, чтобы читались пары 151/152 и 305/306 ====== */
+.parking .cell{
+  width: 44px;
+  height: 44px;
+  font-size: 14px;
+  border-radius: 10px;
+}
 
-    .parking .row {
-      gap: 4px;
-    }
+.parking .row {
+  gap: 6px;
+}
 
-    .parking .cell.double {
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: -0.2px;
-    }
+.parking .cell.double {
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+}
+
 
     .tooltip {
       position: fixed;
@@ -195,15 +196,16 @@
 
       /* паркинг */
       .parking .cell {
-        width: 30px;
-        height: 30px;
-        font-size: 10px;
-      }
+  width: 34px;
+  height: 34px;
+  font-size: 11px;
+}
 
-      .parking .cell.double {
-        font-size: 11px;
-        font-weight: 800;
-      }
+.parking .cell.double {
+  font-size: 11px;
+  font-weight: 900;
+}
+
 
       .floor-labels div {
         height: 24px;
@@ -614,7 +616,7 @@ fetch("./comments.csv", { cache: "no-store" })
         const cells = buildMm2Cells();
 
         // Чуть меньше клеток в ряд => пары читаются лучше
-        const perRow = 18;
+        const perRow = 14;
 
         const searchMm2 = (searchObj?.type === "mm2") ? searchObj.n : NaN;
 
