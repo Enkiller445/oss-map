@@ -6,210 +6,222 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background-color: #d1eaf5;
-      color: #2d2d2d;
-      padding: 20px;
+    body{
+      margin:0;
+      font-family:"Segoe UI",sans-serif;
+      background:#d1eaf5;
+      color:#2d2d2d;
+      padding:20px;
     }
 
-    header h1 {
-      font-size: 20px;
-      margin-bottom: 14px;
-      text-align: center;
+    header h1{
+      font-size:20px;
+      margin:0 0 14px;
+      text-align:center;
     }
 
-    .note {
-      max-width: 1200px;
-      margin: 0 auto 14px;
-      background: #ffffffaa;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 14px;
-      line-height: 1.4;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    .note{
+      max-width:1200px;
+      margin:0 auto 14px;
+      background:#ffffffaa;
+      border-radius:12px;
+      padding:12px 16px;
+      font-size:14px;
+      line-height:1.4;
+      box-shadow:0 1px 4px rgba(0,0,0,0.08);
+    }
+    .note .sub{
+      margin-top:6px;
+      opacity:.85;
+      font-size:12px;
     }
 
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
-      text-align: center;
+    .filters{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      align-items:center;
+      gap:10px;
+      margin-bottom:14px;
+      text-align:center;
+    }
+    .filters label{ font-size:14px; }
+    .filters input, .filters select{ font-size:14px; }
+
+    @media (max-width:480px){
+      .filters{ flex-direction:column; align-items:stretch; }
+      .filters label{ width:100%; }
+      .filters input,.filters select{ width:100%; max-width:340px; }
     }
 
-    .filters label { font-size: 14px; }
-
-    @media (max-width: 480px) {
-      .filters { flex-direction: column; align-items: stretch; }
-      .filters label { width: 100%; }
-      .filters input, .filters select { width: 100%; max-width: 340px; }
+    #info{
+      background:#ffffffaa;
+      padding:12px 16px;
+      margin:10px auto 14px;
+      border-radius:12px;
+      font-size:15px;
+      color:#333;
+      box-shadow:0 1px 4px rgba(0,0,0,0.1);
+      text-align:center;
+      line-height:1.5;
+      max-width:1200px;
+      display:none;
     }
 
-    #info {
-      background: #ffffffaa;
-      padding: 12px 16px;
-      margin: 10px auto 14px;
-      border-radius: 10px;
-      font-size: 15px;
-      color: #333;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-      text-align: center;
-      line-height: 1.5;
-      max-width: 1200px;
-      display: none;
+    .building{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:40px;
+      width:100%;
     }
 
-    .building {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 40px;
-      width: 100%;
+    .entrance-block{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
     }
 
-    .entrance-block {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .entrance-title{
+      font-weight:700;
+      margin-bottom:8px;
+      font-size:14px;
     }
 
-    .entrance-title {
-      font-weight: bold;
-      margin-bottom: 8px;
-      font-size: 14px;
+    .entrance{
+      display:flex;
     }
 
-    .entrance {
-      display: flex;
+    .floor-labels{
+      display:flex;
+      flex-direction:column;
+      margin-right:6px;
+    }
+    .floor-labels div{
+      height:28px;
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      font-size:11px;
+      color:#555;
+      width:22px;
+      font-weight:700;
     }
 
-    .floor-labels {
-      display: flex;
-      flex-direction: column;
-      margin-right: 5px;
+    .columns{ display:flex; flex-direction:column; }
+    .row{ display:flex; gap:2px; }
+
+    .cell{
+      width:28px;
+      height:28px;
+      border-radius:7px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:10px;
+      box-shadow:0 0 2px rgba(0,0,0,0.06);
+      box-sizing:border-box;
+      user-select:none;
+      cursor:default;
+      white-space:nowrap;
+      font-variant-numeric: tabular-nums;
     }
 
-    .floor-labels div {
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      font-size: 11px;
-      color: #555;
-      width: 22px;
-      font-weight: bold;
+    .cell.marked{
+      background:#00c853;
+      color:#fff;
+      font-weight:800;
+    }
+    .cell.empty{
+      background:#fffdf5;
+      border:1px solid #ccc;
+      color:#333;
     }
 
-    .columns { display: flex; flex-direction: column; }
-    .row { display: flex; gap: 2px; }
-
-    .cell {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      box-shadow: 0 0 2px rgba(0,0,0,0.06);
-      box-sizing: border-box;
-      user-select: none;
-      cursor: default;
-      white-space: nowrap;
+    .cell.highlight{
+      outline:2px solid #ffeb3b !important;
+      background:#fff59d !important;
+      color:#000 !important;
+      font-weight:900;
+      z-index:10;
     }
 
-    /* отмеченные */
-    .cell.marked {
-      background-color: #00c853;
-      color: #fff;
-      font-weight: 700;
+    .section-sep{
+      width:100%;
+      max-width:1200px;
+      height:1px;
+      background:rgba(0,0,0,0.12);
+      margin:18px 0;
     }
 
-    /* неотмеченные */
-    .cell.empty {
-      background-color: #fffdf5;
-      border: 1px solid #ccc;
-      color: #333;
+    /* ===== Паркинг -1 (умеренно крупнее квартир) ===== */
+    .parking.p1 .cell{
+      width:34px;
+      height:34px;
+      font-size:11px;
+      border-radius:9px;
+    }
+    .parking.p1 .row{ gap:4px; }
+
+    /* ===== Паркинг -2 (баланс: читаемо, но не простыня) ===== */
+    .parking.p2 .cell{
+      width:38px;
+      height:38px;
+      font-size:12px;
+      border-radius:10px;
+      font-variant-numeric: tabular-nums;
+    }
+    .parking.p2 .row{ gap:5px; }
+    .parking.p2 .cell.double{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:-0.4px;
     }
 
-    .cell.highlight {
-      outline: 2px solid #ffeb3b !important;
-      background-color: #fff59d !important;
-      color: #000 !important;
-      font-weight: 800;
-      z-index: 10;
+    .tooltip{
+      position:fixed;
+      pointer-events:none;
+      background:rgba(0,0,0,0.82);
+      color:#fff;
+      padding:8px 10px;
+      border-radius:10px;
+      font-size:12px;
+      max-width:360px;
+      line-height:1.3;
+      z-index:9999;
+      display:none;
+      white-space:pre-wrap;
     }
 
-    .section-sep {
-      width: 100%;
-      max-width: 1200px;
-      height: 1px;
-      background: rgba(0,0,0,0.12);
-      margin: 18px 0;
-    }
-
-    /* ====== Паркинг: крупнее, чтобы читались пары 151/152 и 305/306 ====== */
-.parking .cell{
-  width: 44px;
-  height: 44px;
-  font-size: 14px;
-  border-radius: 10px;
-}
-
-.parking .row {
-  gap: 6px;
-}
-
-.parking .cell.double {
-  font-size: 14px;
-  font-weight: 900;
-  letter-spacing: -0.3px;
-}
-
-
-    .tooltip {
-      position: fixed;
-      pointer-events: none;
-      background: rgba(0,0,0,0.82);
-      color: #fff;
-      padding: 8px 10px;
-      border-radius: 8px;
-      font-size: 12px;
-      max-width: 340px;
-      line-height: 1.3;
-      z-index: 9999;
-      display: none;
-      white-space: pre-wrap;
-    }
-
-    @media (max-width: 768px) {
+    @media (max-width:768px){
       /* квартиры */
-      .cell {
-        width: 24px;
-        height: 24px;
-        font-size: 9px;
+      .cell{
+        width:24px;
+        height:24px;
+        font-size:9px;
+      }
+      .floor-labels div{
+        height:24px;
+        font-size:9px;
       }
 
-      /* паркинг */
-      .parking .cell {
-  width: 34px;
-  height: 34px;
-  font-size: 11px;
-}
+      /* паркинг -1 */
+      .parking.p1 .cell{
+        width:28px;
+        height:28px;
+        font-size:10px;
+      }
 
-.parking .cell.double {
-  font-size: 11px;
-  font-weight: 900;
-}
-
-
-      .floor-labels div {
-        height: 24px;
-        font-size: 9px;
+      /* паркинг -2 */
+      .parking.p2 .cell{
+        width:30px;
+        height:30px;
+        font-size:10px;
+      }
+      .parking.p2 .cell.double{
+        font-size:10px;
+        font-weight:900;
+        letter-spacing:-0.3px;
       }
     }
   </style>
@@ -223,7 +235,7 @@
   <div class="note">
     Отмечены зелёным — объекты, которые указаны как «проголосовавшие» в списке.<br>
     Здесь нет ФИО, телефонов и иных персональных данных — только номера объектов и комментарии к отдельным случаям.
-    <div style="margin-top:6px; opacity:.85; font-size:12px;">
+    <div class="sub">
       Паркинг: «мм …» = -1 этаж (mm1), «мм2_…» = -2 этаж (mm2). На -2 часть мест показана парами (например 151/152).
     </div>
   </div>
@@ -259,9 +271,7 @@
   <div id="tooltip" class="tooltip"></div>
 
   <script>
-    // =========================
-    // НАСТРОЙКИ КВАРТИР (как у тебя)
-    // =========================
+    // ===== Квартиры: как у тебя =====
     const entrances = [
       { count: 5, start: 1 },
       { count: 5, start: 106 },
@@ -272,153 +282,142 @@
     const floors = 21;
     const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
 
-    // =========================
-    // ДАННЫЕ: data.json
-    // ключи:
-    // "apt:10"  -> квартира
-    // "mm1:82"  -> паркинг -1
-    // "mm2:141" -> паркинг -2
-    // =========================
+    // ===== Данные =====
+    // data.json: { "apt:10":{mark:true,comment:""}, "mm1:82":..., "mm2:141":... }
     let dataMap = {};
 
-    function keyApt(n) { return `apt:${n}`; }
-    function keyMm1(n) { return `mm1:${n}`; }
-    function keyMm2(n) { return `mm2:${n}`; }
+    function keyApt(n){ return `apt:${n}`; }
+    function keyMm1(n){ return `mm1:${n}`; }
+    function keyMm2(n){ return `mm2:${n}`; }
 
-    function isMarked(key) {
-      return dataMap[key]?.mark === true;
-    }
-    function getComment(key) {
-      return dataMap[key]?.comment ? String(dataMap[key].comment) : "";
-    }
+    function isMarked(key){ return dataMap[key]?.mark === true; }
+    function getComment(key){ return dataMap[key]?.comment ? String(dataMap[key].comment) : ""; }
 
-    // Tooltip
+    // ===== Tooltip =====
     const tooltip = document.getElementById("tooltip");
-    function showTooltip(text, x, y) {
+    function showTooltip(text, x, y){
       tooltip.textContent = text;
       tooltip.style.display = "block";
       tooltip.style.left = (x + 12) + "px";
       tooltip.style.top = (y + 12) + "px";
     }
-    function hideTooltip() {
+    function hideTooltip(){
       tooltip.style.display = "none";
       tooltip.textContent = "";
     }
 
-    // Поиск: "10", "кв 10", "мм 82" (=-1), "мм2_141" (=-2)
-    function parseSearch(input) {
+    // ===== Поиск =====
+    function parseSearch(input){
       const s = String(input || "").trim().toLowerCase();
-      if (!s) return null;
+      if(!s) return null;
 
+      // -2 этаж
       const mm2 = s.match(/(мм2[_\s]*|м\.м2|м\/м2)\s*\.?\s*(\d+)/);
-      if (mm2) return { type: "mm2", n: parseInt(mm2[2], 10) };
+      if(mm2) return { type:"mm2", n: parseInt(mm2[2],10) };
 
+      // -1 этаж
       const mm1 = s.match(/(мм|м\/м|м\.м)\s*\.?\s*(\d+)/);
-      if (mm1) return { type: "mm1", n: parseInt(mm1[2], 10) };
+      if(mm1) return { type:"mm1", n: parseInt(mm1[2],10) };
 
+      // квартиры
       const apt = s.match(/(кв)\s*\.?\s*(\d+)/);
-      if (apt) return { type: "apt", n: parseInt(apt[2], 10) };
+      if(apt) return { type:"apt", n: parseInt(apt[2],10) };
 
+      // просто число -> квартира
       const num = s.match(/^(\d+)$/);
-      if (num) return { type: "apt", n: parseInt(num[1], 10) };
+      if(num) return { type:"apt", n: parseInt(num[1],10) };
 
       return null;
     }
 
-    // data.json (если нет — карта просто будет пустая/серая)
-    fetch("./data.json", { cache: "no-store" })
-      .then(r => (r.ok ? r.json() : {}))
-      .then(json => { dataMap = json || {}; render(); })
-      .catch(() => { dataMap = {}; render(); });
+    // ===== Загружаем data.json, потом comments.csv, потом рендер =====
+    fetch("./data.json", { cache:"no-store" })
+      .then(r => r.ok ? r.json() : {})
+      .then(json => {
+        dataMap = json || {};
 
-    // Генерация клеток паркинга -2 (одинарные + двойные по твоей схеме)
-    // Каждая клетка: { label:"151/152", nums:[151,152] } или { label:"170", nums:[170] }
-// ===== Загрузка комментариев из comments.csv =====
-fetch("./comments.csv", { cache: "no-store" })
-  .then(r => r.ok ? r.text() : "")
-  .then(text => {
-    if (!text) return;
+        // comments.csv (опционально)
+        return fetch("./comments.csv", { cache:"no-store" })
+          .then(r => r.ok ? r.text() : "")
+          .then(text => {
+            if(!text) return;
 
-    const lines = text.split(/\r?\n/).slice(1); // пропускаем заголовок
-    lines.forEach(line => {
-      if (!line.trim()) return;
+            const lines = text.split(/\r?\n/).slice(1); // пропускаем заголовок
+            lines.forEach(line => {
+              if(!line.trim()) return;
+              const [key, ...rest] = line.split(",");
+              const comment = rest.join(",").trim();
+              if(key && comment && dataMap[key]){
+                dataMap[key].comment = comment;
+              }
+            });
+          })
+          .catch(() => {});
+      })
+      .catch(() => { dataMap = {}; })
+      .finally(() => { render(); });
 
-      const [key, ...rest] = line.split(",");
-      const comment = rest.join(",").trim();
-
-      if (key && comment && dataMap[key]) {
-        dataMap[key].comment = comment;
-      }
-    });
-  });
-
-    
-    function buildMm2Cells() {
+    // ===== Паркинг -2: схема (одинарные + двойные) =====
+    function buildMm2Cells(){
       const cells = [];
 
       const addSingle = (n) => cells.push({ label: String(n), nums: [n] });
-      const addSingles = (a, b) => { for (let n = a; n <= b; n++) addSingle(n); };
+      const addSingles = (a,b) => { for(let n=a; n<=b; n++) addSingle(n); };
 
-      const addPair = (a, b) => cells.push({ label: `${a}/${b}`, nums: [a, b] });
-      const addPairs = (a, b) => { for (let n = a; n <= b; n += 2) addPair(n, n + 1); };
+      const addPair = (a,b) => cells.push({ label: `${a}/${b}`, nums: [a,b] });
+      const addPairs = (a,b) => { for(let n=a; n<=b; n+=2) addPair(n, n+1); };
 
-      // ТВОЯ СХЕМА -2:
-      addSingles(1, 2);       // 1,2 одинарные
-      addPairs(3, 152);       // 3/4 ... 151/152 двойные
-      addSingles(153, 161);   // 153...161 одинарные
-      addPairs(162, 169);     // 162/163...168/169 двойные
-      addSingles(170, 192);   // 170...192 одинарные
-
-      // было написано "192/194...201/202" — трактуем как 193/194...201/202
-      addPairs(193, 202);     // 193/194...201/202 двойные
-
-      addSingles(203, 231);   // 203...231 одинарные
-      addPairs(232, 243);     // 232/233...242/243 двойные
-      addSingles(244, 252);   // 244...252 одинарные
-      addPairs(253, 256);     // 253/254...255/256 двойные
-      addSingles(257, 263);   // 257...263 одинарные
-      addPairs(264, 299);     // 264/265...298/299 двойные
-      addSingles(300, 304);   // 300...304 одинарные
-      addPairs(305, 362);     // 305/306...361/362 двойные
-      addSingles(363, 373);   // 363...373 одинарные
+      addSingles(1,2);
+      addPairs(3,152);
+      addSingles(153,161);
+      addPairs(162,169);
+      addSingles(170,192);
+      addPairs(193,202);    // трактуем 193/194...201/202
+      addSingles(203,231);
+      addPairs(232,243);
+      addSingles(244,252);
+      addPairs(253,256);
+      addSingles(257,263);
+      addPairs(264,299);
+      addSingles(300,304);
+      addPairs(305,362);
+      addSingles(363,373);
 
       return cells;
     }
 
-    // Карточка по поиску
-    function renderInfo(searchObj) {
+    // ===== Карточка по поиску =====
+    function renderInfo(searchObj){
       const info = document.getElementById("info");
-      if (!searchObj) {
-        info.style.display = "none";
-        info.innerHTML = "";
+      if(!searchObj){
+        info.style.display="none";
+        info.innerHTML="";
         return;
       }
 
-      if (searchObj.type === "mm1") {
+      if(searchObj.type === "mm1"){
         const key = keyMm1(searchObj.n);
         const marked = isMarked(key);
         const comment = getComment(key);
-
         info.innerHTML = `
           🅿️ <strong>Машиноместо ${searchObj.n}</strong> (паркинг -1)<br>
           ${marked ? "🟢 <strong>отмечено в списке</strong>" : "⚪ <strong>не отмечено</strong>"}
           ${comment ? `<br><br>💬 ${comment}` : ""}
         `;
-        info.style.display = "block";
+        info.style.display="block";
         return;
       }
 
-      if (searchObj.type === "mm2") {
+      if(searchObj.type === "mm2"){
         const key = keyMm2(searchObj.n);
         const marked = isMarked(key);
         const comment = getComment(key);
-
         info.innerHTML = `
           🅿️ <strong>Машиноместо ${searchObj.n}</strong> (паркинг -2)<br>
           ${marked ? "🟢 <strong>отмечено в списке</strong>" : "⚪ <strong>не отмечено</strong>"}
           ${comment ? `<br><br>💬 ${comment}` : ""}
         `;
-        info.style.display = "block";
+        info.style.display="block";
         return;
       }
 
@@ -426,12 +425,12 @@ fetch("./comments.csv", { cache: "no-store" })
       const aptN = searchObj.n;
       let found = false;
 
-      for (let e = 0; e < entrances.length; e++) {
+      for(let e=0; e<entrances.length; e++){
         const entrance = entrances[e];
         const start = entrance.start;
         const end = entrance.start + entrance.count * floors;
 
-        if (aptN >= start && aptN < end) {
+        if(aptN >= start && aptN < end){
           const localIndex = aptN - start;
           const floor = Math.floor(localIndex / entrance.count) + 2;
 
@@ -441,33 +440,33 @@ fetch("./comments.csv", { cache: "no-store" })
 
           info.innerHTML = `
             🏠 <strong>Квартира ${aptN}</strong><br>
-            🚪 Подъезд <strong>${e + 1}</strong><br>
+            🚪 Подъезд <strong>${e+1}</strong><br>
             ⬆ Этаж <strong>${floor}</strong><br>
             ${marked ? "🟢 <strong>отмечено в списке</strong>" : "⚪ <strong>не отмечено</strong>"}
             ${comment ? `<br><br>💬 ${comment}` : ""}
           `;
-          info.style.display = "block";
+          info.style.display="block";
           found = true;
           break;
         }
       }
 
-      if (!found) {
+      if(!found){
         info.innerHTML = `⚠️ Объект не найден по структуре дома: <strong>кв. ${aptN}</strong>`;
-        info.style.display = "block";
+        info.style.display="block";
       }
     }
 
-    // Рендер квартир
-    function renderApartments(buildingDiv, searchObj, mode) {
-      if (!(mode === "all" || mode === "apt")) return;
+    // ===== Рендер квартир =====
+    function renderApartments(buildingDiv, searchObj, mode){
+      if(!(mode==="all" || mode==="apt")) return;
 
       const selectedEntrance = document.getElementById("entranceFilter").value;
-      const searchApt = (searchObj?.type === "apt") ? searchObj.n : NaN;
+      const searchApt = (searchObj?.type==="apt") ? searchObj.n : NaN;
 
       entrances.forEach((entrance, index) => {
         const entranceNumber = index + 1;
-        if (selectedEntrance !== "all" && parseInt(selectedEntrance, 10) !== entranceNumber) return;
+        if(selectedEntrance !== "all" && parseInt(selectedEntrance,10) !== entranceNumber) return;
 
         const wrapper = document.createElement("div");
         wrapper.className = "entrance-block";
@@ -485,12 +484,13 @@ fetch("./comments.csv", { cache: "no-store" })
         const grid = document.createElement("div");
         grid.className = "columns";
 
-        for (let i = 0; i < floors; i++) {
+        for(let i=0; i<floors; i++){
           const floor = floors - 1 - i;
+
           const row = document.createElement("div");
           row.className = "row";
 
-          for (let j = 0; j < entrance.count; j++) {
+          for(let j=0; j<entrance.count; j++){
             const aptNumber = entrance.start + floor * entrance.count + j;
             const key = keyApt(aptNumber);
 
@@ -498,17 +498,17 @@ fetch("./comments.csv", { cache: "no-store" })
             cell.className = "cell";
             cell.textContent = aptNumber;
 
-            if (isMarked(key)) cell.classList.add("marked");
+            if(isMarked(key)) cell.classList.add("marked");
             else cell.classList.add("empty");
 
-            if (aptNumber === searchApt) cell.classList.add("highlight");
+            if(aptNumber === searchApt) cell.classList.add("highlight");
 
             const comment = getComment(key);
-            if (comment) {
+            if(comment){
               cell.addEventListener("mousemove", (e) => showTooltip(comment, e.clientX, e.clientY));
               cell.addEventListener("mouseleave", hideTooltip);
               cell.addEventListener("click", (e) => {
-                if (tooltip.style.display === "block") hideTooltip();
+                if(tooltip.style.display === "block") hideTooltip();
                 else showTooltip(comment, e.clientX, e.clientY);
               });
             } else {
@@ -521,6 +521,7 @@ fetch("./comments.csv", { cache: "no-store" })
           const label = document.createElement("div");
           label.textContent = floorNumbers[floor];
           floorLabels.appendChild(label);
+
           grid.appendChild(row);
         }
 
@@ -529,27 +530,28 @@ fetch("./comments.csv", { cache: "no-store" })
 
         wrapper.appendChild(title);
         wrapper.appendChild(floorGroup);
+
         buildingDiv.appendChild(wrapper);
       });
     }
 
-    // Рендер паркинга -1 и -2
-    function renderParking(buildingDiv, searchObj, mode) {
-      if (!(mode === "all" || mode === "mm1" || mode === "mm2")) return;
+    // ===== Рендер паркинга -1 и -2 =====
+    function renderParking(buildingDiv, searchObj, mode){
+      if(!(mode==="all" || mode==="mm1" || mode==="mm2")) return;
 
-      const wantMm1 = (mode === "all" || mode === "mm1");
-      const wantMm2 = (mode === "all" || mode === "mm2");
+      const wantMm1 = (mode==="all" || mode==="mm1");
+      const wantMm2 = (mode==="all" || mode==="mm2");
 
-      if (mode === "all") {
+      if(mode==="all"){
         const sep = document.createElement("div");
         sep.className = "section-sep";
         buildingDiv.appendChild(sep);
       }
 
-      // ---- -1: 207 мест, одинарные (23x9) ----
-      if (wantMm1) {
+      // --- Паркинг -1 (1..207), 23x9 ---
+      if(wantMm1){
         const wrapper = document.createElement("div");
-        wrapper.className = "entrance-block parking";
+        wrapper.className = "entrance-block parking p1";
 
         const title = document.createElement("div");
         title.className = "entrance-title";
@@ -560,31 +562,31 @@ fetch("./comments.csv", { cache: "no-store" })
 
         const perRow = 23;
         const rows = 9;
-        const searchMm1 = (searchObj?.type === "mm1") ? searchObj.n : NaN;
+        const searchMm1 = (searchObj?.type==="mm1") ? searchObj.n : NaN;
 
-        for (let r = 0; r < rows; r++) {
+        for(let r=0; r<rows; r++){
           const row = document.createElement("div");
           row.className = "row";
 
-          for (let c = 0; c < perRow; c++) {
-            const mmNumber = 1 + r * perRow + c; // 1..207
+          for(let c=0; c<perRow; c++){
+            const mmNumber = 1 + r*perRow + c; // 1..207
             const key = keyMm1(mmNumber);
 
             const cell = document.createElement("div");
             cell.className = "cell";
             cell.textContent = mmNumber;
 
-            if (isMarked(key)) cell.classList.add("marked");
+            if(isMarked(key)) cell.classList.add("marked");
             else cell.classList.add("empty");
 
-            if (mmNumber === searchMm1) cell.classList.add("highlight");
+            if(mmNumber === searchMm1) cell.classList.add("highlight");
 
             const comment = getComment(key);
-            if (comment) {
+            if(comment){
               cell.addEventListener("mousemove", (e) => showTooltip(comment, e.clientX, e.clientY));
               cell.addEventListener("mouseleave", hideTooltip);
               cell.addEventListener("click", (e) => {
-                if (tooltip.style.display === "block") hideTooltip();
+                if(tooltip.style.display === "block") hideTooltip();
                 else showTooltip(comment, e.clientX, e.clientY);
               });
             } else {
@@ -593,6 +595,7 @@ fetch("./comments.csv", { cache: "no-store" })
 
             row.appendChild(cell);
           }
+
           grid.appendChild(row);
         }
 
@@ -601,10 +604,10 @@ fetch("./comments.csv", { cache: "no-store" })
         buildingDiv.appendChild(wrapper);
       }
 
-      // ---- -2: по схеме, “двойные” как 3/4 и т.д. ----
-      if (wantMm2) {
+      // --- Паркинг -2 (с парами) ---
+      if(wantMm2){
         const wrapper = document.createElement("div");
-        wrapper.className = "entrance-block parking";
+        wrapper.className = "entrance-block parking p2";
 
         const title = document.createElement("div");
         title.className = "entrance-title";
@@ -614,44 +617,40 @@ fetch("./comments.csv", { cache: "no-store" })
         grid.className = "columns";
 
         const cells = buildMm2Cells();
+        const perRow = 16; // баланс: не простыня и читаемо
 
-        // Чуть меньше клеток в ряд => пары читаются лучше
-        const perRow = 14;
+        const searchMm2 = (searchObj?.type==="mm2") ? searchObj.n : NaN;
 
-        const searchMm2 = (searchObj?.type === "mm2") ? searchObj.n : NaN;
-
-        for (let i = 0; i < cells.length; i += perRow) {
+        for(let i=0; i<cells.length; i+=perRow){
           const row = document.createElement("div");
           row.className = "row";
 
-          for (const item of cells.slice(i, i + perRow)) {
+          for(const item of cells.slice(i, i+perRow)){
             const keys = item.nums.map(n => keyMm2(n));
 
             const cell = document.createElement("div");
             cell.className = "cell";
             cell.textContent = item.label;
 
-            if (item.nums.length === 2) {
-              cell.classList.add("double");
-            }
+            if(item.nums.length === 2) cell.classList.add("double");
 
             const marked = keys.some(k => isMarked(k));
-            if (marked) cell.classList.add("marked");
+            if(marked) cell.classList.add("marked");
             else cell.classList.add("empty");
 
-            if (!isNaN(searchMm2) && item.nums.includes(searchMm2)) {
+            if(!isNaN(searchMm2) && item.nums.includes(searchMm2)){
               cell.classList.add("highlight");
             }
 
-            // tooltip: показываем комментарии, если они есть
+            // комментарии: показываем, если есть на любом из ключей
             const comments = keys.map(k => getComment(k)).filter(Boolean);
             const comment = comments.length ? comments.join("\n") : "";
 
-            if (comment) {
+            if(comment){
               cell.addEventListener("mousemove", (e) => showTooltip(comment, e.clientX, e.clientY));
               cell.addEventListener("mouseleave", hideTooltip);
               cell.addEventListener("click", (e) => {
-                if (tooltip.style.display === "block") hideTooltip();
+                if(tooltip.style.display === "block") hideTooltip();
                 else showTooltip(comment, e.clientX, e.clientY);
               });
             } else {
@@ -670,14 +669,14 @@ fetch("./comments.csv", { cache: "no-store" })
       }
     }
 
-    // ОСНОВНОЙ RENDER
-    function render() {
+    // ===== Основной render =====
+    function render(){
       hideTooltip();
 
       const buildingDiv = document.getElementById("building");
       buildingDiv.innerHTML = "";
 
-      const mode = document.getElementById("objectFilter").value; // all/apt/mm1/mm2
+      const mode = document.getElementById("objectFilter").value;
       const searchObj = parseSearch(document.getElementById("search").value);
 
       renderInfo(searchObj);
